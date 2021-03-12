@@ -14,9 +14,10 @@ internal object JDBCGenerator {
         val tab = JDBCProcessor.TAB
         val annotation = ReflectUtils.getAnnotation(element, JDBC::class)
         val conf = ReflectUtils.getAnnotationAttributeValue(annotation, "conf") as List<*>?
+        val autoincrementSyntax = ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrementSyntax") as String? ?: "AUTO_INCREMENT"
         val packageName = "${processingEnv.elementUtils.getPackageOf(element)}.jdbc"
         val initMethods = conf!!.joinToString("\n$tab$tab") { confAnnotation ->
-            InitDatabaseGenerator.generate(processingEnv, confAnnotation as AnnotationMirror, tables, packageName)
+            InitDatabaseGenerator.generate(processingEnv, confAnnotation as AnnotationMirror, tables, packageName, autoincrementSyntax)
         }
         val fileName = "JDBCFactory"
         // Generate DAO implementations

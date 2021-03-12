@@ -9,6 +9,5 @@ annotation class Column(
         val primaryKey: Boolean = false,
         val autoincrement: Boolean = false,
         val required: Boolean = false,
-        val sqlType: String,
-        val autoincrementSyntax: String = "AUTO_INCREMENT"
+        val sqlType: String
 )

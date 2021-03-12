@@ -13,7 +13,8 @@ internal object ReflectUtils {
 
     fun getAnnotation(element: Element, clazz: KClass<*>): AnnotationMirror {
         return element.annotationMirrors
-                .first { it.annotationType.toString() == clazz.qualifiedName }
+                .firstOrNull { it.annotationType.toString() == clazz.qualifiedName }
+                ?: throw RuntimeException("Annotation ${clazz.simpleName} not found in ${element.simpleName}")
     }
 
     fun getAnnotationAttributeValue(annotation: AnnotationMirror, attribute: String): Any? {

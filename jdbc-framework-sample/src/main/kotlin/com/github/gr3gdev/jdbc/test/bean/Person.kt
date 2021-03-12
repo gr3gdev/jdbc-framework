@@ -10,7 +10,7 @@ class Person {
     var id: Long = 0
 
     @Column(sqlType = "VARCHAR(40)")
-    lateinit var name: String
+    lateinit var firstname: String
 
     @Column(required = false, sqlType = "INT")
     var age: Int? = null
@@ -27,7 +27,7 @@ class Person {
     var test = true
 
     override fun toString(): String {
-        return "Person(id=$id, name='$name', personAddress=$personAddress, car=$car, test=$test)"
+        return "Person(id=$id, name='$firstname', personAddress=$personAddress, car=$car, test=$test)"
     }
 
 }

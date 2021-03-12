@@ -1,24 +1,101 @@
 package com.github.gr3gdev.jdbc.generator.impl
 
+import com.github.gr3gdev.jdbc.error.JDBCConfigurationException
+import com.github.gr3gdev.jdbc.generator.QueryGenerator
+import com.github.gr3gdev.jdbc.generator.element.ColumnElement
+import com.github.gr3gdev.jdbc.generator.element.GetterStructure
 import com.github.gr3gdev.jdbc.generator.element.TableElement
 import com.github.gr3gdev.jdbc.processor.JDBCProcessor
-import com.github.gr3gdev.jdbc.generator.QueryGenerator
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
+import javax.lang.model.type.TypeMirror
 
 internal class SelectGenerator(private val tableElement: TableElement) : QueryGenerator(tableElement) {
 
-    override fun execute(element: Element, attributes: List<String>?, filters: List<String>?): Pair<List<String>, String> {
+    override fun execute(element: Element, attributes: GetterStructure, filters: GetterStructure): Pair<List<String>, String> {
         (element as ExecutableElement)
-        val tab = JDBCProcessor.TAB
         val returnType = element.returnType
-        val selector = attributes?.joinToString(", ") {
-            tableElement.getColumn(it).name()
-        } ?: "*"
-        var sql = "SELECT $selector FROM ${tableElement.name}"
-        if (!filters.isNullOrEmpty()) {
-            sql += " WHERE ${getFilters(filters)}"
+        val sql = getSQL(attributes, filters)
+        val pair = getNewInstance(returnType)
+        val instance = pair.first
+        val collection = pair.second
+        if (!collection && !returnType.toString().startsWith("java.util.Optional")) {
+            throw JDBCConfigurationException("Select unique object must return Optional<${tableElement.classType}>")
         }
+        val mapAttributes = getMappingAttributes(collection, attributes)
+        val parseResult = if (collection) {
+            "while"
+        } else {
+            "if"
+        }
+        val finalType = if (collection) {
+            "final "
+        } else {
+            ""
+        }
+        val content = """
+    @Override
+    public $returnType ${element.simpleName}(${joinParameters(element)}) {
+        $finalType$returnType ret = $instance;
+        final String sql = "$sql";
+        try (${getConnection()};
+            final PreparedStatement stm = cnx.prepareStatement(sql)) {
+            ${setParameters(filters.children, element) ?: "// Without conditions"}
+            try (final ResultSet res = stm.executeQuery()) {
+                $parseResult (res.next()) {
+                    $mapAttributes
+                }
+                return ret;
+            }
+        } catch (SQLException throwables) {
+            ${throwException("com.github.gr3gdev.jdbc.dao.QueryType.SELECT", element.parameters)}
+        }
+    }
+        """
+        return Pair(imports(), content)
+    }
+
+    private fun getMappingAttributes(collection: Boolean, attributes: GetterStructure): String {
+        val tab = JDBCProcessor.TAB
+        val obj = "elt"
+        var beforeMapping = ""
+        var afterMapping = ""
+        beforeMapping = "final ${tableElement.classType!!} elt = new ${tableElement.classType}();\n$tab$tab$tab$tab$tab"
+        if (collection) {
+            afterMapping = "\n$tab$tab$tab$tab${tab}ret.add(elt);"
+        } else {
+            afterMapping = "\n$tab$tab$tab$tab${tab}ret = java.util.Optional.of(elt);"
+        }
+        val result = ArrayList<String>()
+        result(result, obj, attributes)
+        var mapAttributes = result.joinToString("\n$tab$tab$tab$tab$tab")
+        if (mapAttributes.isBlank()) {
+            mapAttributes = tableElement.columns.joinToString("\n$tab$tab$tab$tab$tab") {
+                getColumnResult(tableElement, it, obj)
+            }
+        }
+        return "$beforeMapping$mapAttributes$afterMapping"
+    }
+
+    private fun getColumnResult(table: TableElement, it: ColumnElement, obj: String): String {
+        return if (it.foreignKey != null) {
+            """final ${it.type} ${it.fieldName} = new ${it.type}();
+                    ${getResult(table, it.foreignKey!!.getPrimaryKey().fieldName, it.fieldName, it.name())}
+                    $obj.set${it.fieldName.capitalize()}(${it.fieldName});"""
+        } else {
+            getResult(table, it.fieldName, obj)
+        }
+    }
+
+    private fun result(res: ArrayList<String>, obj: String, structure: GetterStructure) {
+        structure.children.filter { it.column != null }
+                .forEach {
+                    res.add(getColumnResult(structure.table, it.column!!, obj))
+                    result(res, it.column.fieldName, it)
+                }
+    }
+
+    private fun getNewInstance(returnType: TypeMirror): Pair<String, Boolean> {
         var collection = false
         val instance = when {
             returnType.toString().startsWith("java.util.List") -> {
@@ -30,48 +107,44 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
                 "new java.util.HashSet()"
             }
             else -> {
-                "new $returnType()"
+                "java.util.Optional.empty()"
             }
         }
-        var obj = "ret"
-        var beforeMapping = ""
-        var afterMapping = ""
-        if (collection) {
-            obj = "elt"
-            beforeMapping = "final ${tableElement.classType!!} elt = new ${tableElement.classType}();\n$tab$tab$tab$tab$tab"
-            afterMapping = "\n$tab$tab$tab$tab${tab}ret.add(elt);"
+        return Pair(instance, collection)
+    }
+
+    private fun getSQL(attributes: GetterStructure, filters: GetterStructure): String {
+        val alias = attributes.alias
+        val selector = ArrayList<String>()
+        select(selector, attributes)
+        var sql = "SELECT ${selector.joinToString(", ")} FROM ${tableElement.name} $alias"
+        sql += join(attributes)
+        if (!filters.children.isNullOrEmpty()) {
+            sql += " WHERE ${getFilters(alias, filters)}"
         }
-        val mapAttributes = attributes?.joinToString("\n$tab$tab$tab$tab$tab") {
-            getResult(it, obj)
-        } ?: tableElement.columns.joinToString("\n$tab$tab$tab$tab$tab") {
-            if (it.foreignKey != null) {
-                """final ${it.type} ${it.fieldName} = new ${it.type}();
-                    ${getResult(it.foreignKey!!.fieldName, it.fieldName, it.name())}
-                    $obj.set${it.fieldName.capitalize()}(${it.fieldName});"""
+        return sql
+    }
+
+    private fun select(sql: ArrayList<String>, structure: GetterStructure) {
+        val alias = structure.alias
+        structure.children.forEach {
+            if (it.children.isNotEmpty()) {
+                select(sql, it)
+            }
+            if (it.column?.foreignKey != null) {
+                sql.add("$alias.${it.column.foreignKey!!.getPrimaryKey().name()}_${it.column.name()}")
             } else {
-                getResult(it.fieldName, obj)
+                sql.add("$alias.${it.column?.name()}")
             }
-        }
-        val content = """
-    @Override
-    public $returnType ${element.simpleName}(${joinParameters(element)}) {
-        final $returnType ret = $instance;
-        final String sql = "$sql";
-        try (${getConnection()};
-            final PreparedStatement stm = cnx.prepareStatement(sql)) {
-            ${setParameters(filters, element) ?: "// Without conditions"}
-            try (final ResultSet res = stm.executeQuery()) {
-                while (res.next()) {
-                    $beforeMapping$mapAttributes$afterMapping
-                }
-                return ret;
-            }
-        } catch (SQLException throwables) {
-            ${throwException("com.github.gr3gdev.jdbc.dao.QueryType.SELECT", element.parameters)}
         }
     }
-        """
-        return Pair(imports(), content)
+
+    private fun join(structure: GetterStructure): String {
+        return structure.children.filter {
+            it.children.isNotEmpty()
+        }.joinToString(" ") {
+            " ${it.joinType} JOIN ${it.table.name} ${it.alias} ON ${it.alias}.${it.table.getPrimaryKey().name()} = ${it.parent?.alias}.${it.table.getPrimaryKey().name()}_${it.column?.name()}" + join(it)
+        }
     }
 
 }

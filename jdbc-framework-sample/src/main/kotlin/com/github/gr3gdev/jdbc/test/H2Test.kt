@@ -38,7 +38,7 @@ fun test1() {
     carDAO.add(car2)
 
     val person = Person()
-    person.name = "Bobby"
+    person.firstname = "Bobby"
     person.personAddress = address
     person.car = car2
 
@@ -46,7 +46,8 @@ fun test1() {
     personDAO.add(person)
 
     println(personDAO.select())
-    println(personDAO.selectByName("Bobby").id)
+    personDAO.selectByName("Bobby").ifPresent { println(it.id) }
+    println(personDAO.selectAddress())
 
     println("Delete $person")
     personDAO.delete(person)

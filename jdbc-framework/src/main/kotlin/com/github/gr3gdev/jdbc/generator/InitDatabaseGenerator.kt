@@ -1,5 +1,6 @@
 package com.github.gr3gdev.jdbc.generator
 
+import com.github.gr3gdev.jdbc.generator.element.GetterStructure
 import com.github.gr3gdev.jdbc.generator.element.SortedTableElement
 import com.github.gr3gdev.jdbc.generator.element.TableElement
 import com.github.gr3gdev.jdbc.generator.impl.CreateTableGenerator
@@ -13,7 +14,7 @@ import javax.lang.model.element.Element
 
 object InitDatabaseGenerator {
 
-    fun generate(processingEnv: ProcessingEnvironment, confAnnotation: AnnotationMirror, tables: Set<Element>, packageName: String): String {
+    fun generate(processingEnv: ProcessingEnvironment, confAnnotation: AnnotationMirror, tables: Set<Element>, packageName: String, autoincrementSyntax: String): String {
         val tab = JDBCProcessor.TAB
         val configFile = ReflectUtils.getAnnotationAttributeValue(confAnnotation, "configFile")
         val databaseName = ReflectUtils.getAnnotationAttributeValue(confAnnotation, "databaseName") ?: "default"
@@ -34,7 +35,7 @@ object InitDatabaseGenerator {
                 if (tableDatabase.any { other ->
                             other.tableElement.name != meta.tableElement.name
                                     && other.order <= meta.order
-                                    && other.tableElement.columns.any { c -> c.foreignKey?.tableName == meta.tableElement.name }
+                                    && other.tableElement.columns.any { c -> c.foreignKey?.name == meta.tableElement.name }
                         }) {
                     meta.order--
                     ordered = false
@@ -46,7 +47,8 @@ object InitDatabaseGenerator {
         }.map { sortedTable ->
             val table = sortedTable.table
             val tableElement = sortedTable.tableElement
-            val generation = CreateTableGenerator(tableElement).execute(table, null, null)
+            val mainStructure = GetterStructure(null, tableElement, null)
+            val generation = CreateTableGenerator(tableElement, autoincrementSyntax).execute(table, mainStructure, mainStructure)
             val imports = generation.first.joinToString("\n") { "import $it;" }
             val methods = generation.second
             val className = "${databaseName.toString().capitalize()}${table.simpleName.toString().capitalize()}"

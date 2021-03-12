@@ -9,9 +9,8 @@ internal class ColumnElement(
         val primaryKey: Boolean,
         val autoincrement: Boolean,
         val required: Boolean,
-        val sqlType: String,
-        val autoincrementSyntax: String
+        val sqlType: String
 ) : DatabaseElement() {
-    var foreignKey: ColumnElement? = null
+    var foreignKey: TableElement? = null
     fun name() = fieldName.camelToSnakeCase()
 }

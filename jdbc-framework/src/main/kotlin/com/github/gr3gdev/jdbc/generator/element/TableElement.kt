@@ -12,6 +12,8 @@ internal class TableElement(private val processingEnv: ProcessingEnvironment, ta
     val databaseName = ReflectUtils.getAnnotationAttributeValue(ReflectUtils.getAnnotation(table, Table::class), "databaseName") ?: "default"
     val columns = getColumns(table)
 
+    fun getPrimaryKey() = columns.firstOrNull { it.primaryKey } ?: throw RuntimeException("No primary key found for $name")
+
     private fun getColumns(table: Element): List<ColumnElement> {
         return table.enclosedElements.filter { ReflectUtils.isAnnotationPresent(it, Column::class) }
                 .map {
@@ -23,13 +25,11 @@ internal class TableElement(private val processingEnv: ProcessingEnvironment, ta
                             ReflectUtils.getAnnotationAttributeValue(annotation, "primaryKey") as Boolean? ?: false,
                             ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrement") as Boolean? ?: false,
                             ReflectUtils.getAnnotationAttributeValue(annotation, "required") as Boolean? ?: false,
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "sqlType") as String? ?: "UNDEFINED",
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrementSyntax") as String? ?: "AUTO_INCREMENT"
+                            ReflectUtils.getAnnotationAttributeValue(annotation, "sqlType") as String? ?: "UNDEFINED"
                     )
                     val columnType = processingEnv.typeUtils.asElement(it.asType())
                     if (columnType != null && ReflectUtils.isAnnotationPresent(columnType, Table::class)) {
-                        ce.foreignKey = getColumns(columnType).firstOrNull { fk -> fk.primaryKey }
-                                ?: throw RuntimeException("No primary key found for ${columnType.simpleName.toString().camelToSnakeCase()}")
+                        ce.foreignKey = TableElement(processingEnv, columnType, columnType.asType().toString())
                     }
                     ce
                 }

@@ -22,10 +22,11 @@ Annotation de configuration des bases de données.
 
 @JdbcConf
 
-|Attribut    |Type  |Valeur par défaut|Description                                                                        |
-|------------|------|-----------------|-----------------------------------------------------------------------------------|
-|configFile  |String|                 |Chemin dans le classpath vers le fichier properties de configuration (HikariConfig)|
-|databaseName|String|default          |Nom de la base de données associée à la configuration                              |
+|Attribut           |Type  |Valeur par défaut|Description                                                                        |
+|-------------------|------|-----------------|-----------------------------------------------------------------------------------|
+|configFile         |String|                 |Chemin dans le classpath vers le fichier properties de configuration (HikariConfig)|
+|databaseName       |String|default          |Nom de la base de données associée à la configuration                              |
+|autoincrementSyntax|String|AUTO_INCREMENT   |Syntaxe SQL pour l'auto-incrément de la colonne                                    |
 
 Exemple de syntaxe :
 
@@ -70,7 +71,6 @@ Annotations pour définir la structure d'une table.
 |autoincrement      |Boolean|false            |Vrai si la colonne s'auto incrémente           |
 |required           |Boolean|false            |Vrai si la colonne est obligatoire             |
 |sqlType            |String |                 |Type SQL pour la colonne                       |
-|autoincrementSyntax|String |AUTO_INCREMENT   |Syntaxe SQL pour l'auto-incrément de la colonne|
 
 Exemple de syntaxe :
 
