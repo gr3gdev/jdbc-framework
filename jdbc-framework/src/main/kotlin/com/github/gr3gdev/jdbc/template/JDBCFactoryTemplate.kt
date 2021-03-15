@@ -13,7 +13,7 @@ import com.github.gr3gdev.jdbc.SQLDataSource;
 $imports
 
 /**
- * Auto-generated class $className.
+ * Auto-generated class.
  */
 public class $className {
 

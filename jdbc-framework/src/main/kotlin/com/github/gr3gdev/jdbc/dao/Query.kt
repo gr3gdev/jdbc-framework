@@ -26,5 +26,6 @@ package com.github.gr3gdev.jdbc.dao
 annotation class Query(
         val type: QueryType,
         val attributes: Array<String> = ["*"],
-        val filters: Array<String> = []
+        val filters: Array<String> = [],
+        val joins: Array<QueryJoin> = []
 )

@@ -13,6 +13,7 @@ import com.github.gr3gdev.jdbc.processor.JDBCProcessor
 import com.github.gr3gdev.jdbc.processor.ReflectUtils
 import java.util.*
 import javax.annotation.processing.ProcessingEnvironment
+import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.VariableElement
@@ -51,8 +52,6 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
             "java.sql.ResultSet", "java.sql.SQLException", "java.sql.Statement").plus(imports)
 
     abstract fun execute(element: Element, attributes: GetterStructure, filters: GetterStructure): Pair<List<String>, String>
-
-    protected fun getConnection() = "final Connection cnx = SQLDataSource.getConnection(\"${tableElement.databaseName}\")"
 
     protected fun getFilters(alias: String, filters: GetterStructure): String {
         return filters.children.filter { it.column != null }
@@ -127,14 +126,6 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
 
     protected fun joinParameters(query: ExecutableElement) = query.parameters.joinToString(", ") { "final ${it.asType()} ${it.simpleName}" }
 
-    protected fun throwException(type: String, parameters: MutableList<out VariableElement>): String {
-        return "throw new JDBCExecutionException($type, \"${
-            parameters.joinToString(", ") {
-                it.simpleName.toString()
-            }
-        }\", throwables);"
-    }
-
     fun isCollectionParameter(parameter: VariableElement): Boolean {
         val type = parameter.asType().toString()
         val collections = listOf(List::class.java, ArrayList::class.java, LinkedList::class.java,
@@ -144,7 +135,7 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
 
     companion object {
 
-        private fun mapping(table: TableElement, original: List<*>?): GetterStructure {
+        private fun mapping(table: TableElement, original: List<*>?, joins: List<*>?): GetterStructure {
             val structure = GetterStructure(null, table, null)
             removeQuotes(original)?.forEach {
                 var parent = structure
@@ -153,6 +144,16 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
                     val eltStructure = parent.children.firstOrNull { c ->
                         c.parent?.table == parent.table && c.table == column.foreignKey ?: parent.table && c.column == column
                     } ?: GetterStructure(parent, column.foreignKey ?: parent.table, column)
+                    val joinAnnotation = joins?.firstOrNull { join ->
+                        (join as AnnotationMirror)
+                        val tableJoin = ReflectUtils.getAnnotationAttributeValue(join, "table")
+                        tableJoin?.toString().equals(eltStructure.table.classType)
+                    } as AnnotationMirror?
+                    eltStructure.joinType = if (joinAnnotation != null) {
+                        ReflectUtils.getAnnotationAttributeValue(joinAnnotation, "type").toString()
+                    } else {
+                        "INNER"
+                    }
                     parent.children.add(eltStructure)
                     if (column.foreignKey != null) {
                         parent = eltStructure
@@ -178,6 +179,7 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
             val queryType = ReflectUtils.getAnnotationAttributeValue(queryAnnotation, "type")
             var attributes = ReflectUtils.getAnnotationAttributeValue(queryAnnotation, "attributes") as List<*>?
             val filters = ReflectUtils.getAnnotationAttributeValue(queryAnnotation, "filters") as List<*>?
+            val joins = ReflectUtils.getAnnotationAttributeValue(queryAnnotation, "joins") as List<*>?
             return when {
                 queryType.toString() == QueryType.SELECT.name -> {
                     if (attributes == null) {
@@ -197,7 +199,7 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
                 else -> {
                     throw RuntimeException("Type $queryType not supported !")
                 }
-            }.execute(query, mapping(tableElement, attributes), mapping(tableElement, filters))
+            }.execute(query, mapping(tableElement, attributes, joins), mapping(tableElement, filters, joins))
         }
 
         private fun removeQuotes(original: List<*>?): List<String>? {

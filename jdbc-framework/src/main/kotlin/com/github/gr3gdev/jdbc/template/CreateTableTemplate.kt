@@ -7,12 +7,11 @@ object CreateTableTemplate {
 package $packageName;
 
 import com.github.gr3gdev.jdbc.SQLDataSource;
-import com.github.gr3gdev.jdbc.error.JDBCCreateTableException;
 
 $imports
 
 /**
- * Auto-generated class $className.
+ * Auto-generated class.
  */
 class $className {
     $methods

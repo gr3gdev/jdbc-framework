@@ -41,7 +41,7 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
             "${parameter.simpleName}.set${it.fieldName.capitalize()}(res.get${mappingTypes[it.type.toString()]}(\"${it.name()}\"));"
         }
         val execution = if (isBatch) {
-            """final PreparedStatement stm = cnx.prepareStatement(sql)) {
+            """SQLDataSource.execute("${tableElement.databaseName}", sql, (stm) -> {
             int index = 0;
             for (final ${tableElement.classType} element : ${parameter.simpleName}) {
                 ${setParameters("element", insertAttributes, "\n$tab$tab$tab$tab")}
@@ -50,26 +50,21 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
                 if (index % 1000 == 0 || index == ${parameter.simpleName}.size()) {
                     stm.executeBatch();
                 }
-            }"""
+            }
+        });"""
         } else {
-            """final PreparedStatement stm = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            """SQLDataSource.executeAndGetKey("${tableElement.databaseName}", sql, (stm) -> {
             ${setParameters(parameter.simpleName.toString(), insertAttributes, "\n$tab$tab$tab")}
             stm.executeUpdate();
-            try (final ResultSet res = stm.getGeneratedKeys()) {
-                if (res.next()) {
-                    $setID
-                }
-            }"""
+        }, (res) -> {
+            $setID
+        });"""
         }
         val content = """
     @Override
     public void ${element.simpleName}(${joinParameters(element)}) {
         final String sql = "$sql";
-        try (${getConnection()};
-            $execution
-        } catch (SQLException throwables) {
-            ${throwException("com.github.gr3gdev.jdbc.dao.QueryType.INSERT", element.parameters)}
-        }
+        $execution
     }
             """
         return Pair(imports("java.sql.Statement"), content)

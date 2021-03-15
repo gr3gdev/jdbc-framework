@@ -37,13 +37,10 @@ internal class UpdateGenerator(private val tableElement: TableElement) : QueryGe
     @Override
     public int ${element.simpleName}(${joinParameters(element)}) {
         final String sql = "$sql";
-        try (${getConnection()};
-            final PreparedStatement stm = cnx.prepareStatement(sql)) {
+        return SQLDataSource.executeAndUpdate("${tableElement.databaseName}", sql, (stm) -> {
             ${setParameters(attributes.children.plus(filters.children), element)}
             return stm.executeUpdate();
-        } catch (SQLException throwables) {
-            ${throwException("com.github.gr3gdev.jdbc.dao.QueryType.UPDATE", element.parameters)}
-        }
+        });
     }
         """
         return Pair(imports(), content)

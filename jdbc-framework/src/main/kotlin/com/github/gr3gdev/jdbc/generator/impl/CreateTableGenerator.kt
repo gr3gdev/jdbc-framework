@@ -52,12 +52,9 @@ internal class CreateTableGenerator(private val tableElement: TableElement, priv
         final StringBuilder sql = new StringBuilder("CREATE TABLE ${tableElement.name} (")
             ${columns.joinToString("\n$tab$tab${tab}.append(\",\")\n$tab$tab$tab")}
             .append(")");
-        try (${getConnection()};
-            final PreparedStatement stm = cnx.prepareStatement(sql.toString())) {
+        SQLDataSource.execute("${tableElement.databaseName}", sql.toString(), (stm) -> {
             stm.executeUpdate();
-        } catch (SQLException throwables) {
-            throw new JDBCCreateTableException("Error when created ${tableElement.name}", throwables);
-        }
+        });
     }
         """
         return Pair(imports(), content)

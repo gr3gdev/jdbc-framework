@@ -6,6 +6,7 @@ import com.github.gr3gdev.jdbc.processor.ReflectUtils
 import com.github.gr3gdev.jdbc.template.DAOImplTemplate
 import com.github.gr3gdev.jdbc.template.JDBCFactoryTemplate
 import javax.annotation.processing.ProcessingEnvironment
+import javax.annotation.processing.Processor
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 
@@ -23,6 +24,12 @@ internal object DAOGenerator {
     private fun processImplementDAO(processingEnv: ProcessingEnvironment, element: Element, packageName: String, tables: Set<Element>): Pair<Element, String?> {
         val annotation = ReflectUtils.getAnnotation(element, Queries::class)
         val type = ReflectUtils.getAnnotationAttributeValue(annotation, "mapTo")
+        val implementation = ReflectUtils.getAnnotationAttributeValue(annotation, "implementation")
+        val parent = if (implementation != null && implementation.toString() != Processor::class.qualifiedName) {
+            "extends $implementation"
+        } else {
+            "implements $element"
+        }
         val table = tables.firstOrNull { it.toString() == type.toString() }
                 ?: throw RuntimeException("$type is not a table")
         if (element.kind == ElementKind.INTERFACE) {
@@ -43,7 +50,7 @@ internal object DAOGenerator {
             val methods = queries.joinToString("\n") {
                 it.second
             }
-            val classContent = DAOImplTemplate.generate(packageName, imports, element, fileName, methods)
+            val classContent = DAOImplTemplate.generate(packageName, imports, parent, fileName, methods)
             processingEnv.filer.createSourceFile("$packageName.$fileName").openWriter().use { it.write(classContent) }
             return Pair(element, fileName)
         }

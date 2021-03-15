@@ -62,6 +62,7 @@ fun test2() {
     houseDAO.add(house)
 
     println(houseDAO.findById(1))
+    println(houseDAO.test())
 }
 
 fun main() {

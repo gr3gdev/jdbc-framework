@@ -28,30 +28,40 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
         } else {
             "if"
         }
-        val finalType = if (collection) {
-            "final "
-        } else {
-            ""
-        }
-        val content = """
+        val content = if (collection) {
+            """
     @Override
     public $returnType ${element.simpleName}(${joinParameters(element)}) {
-        $finalType$returnType ret = $instance;
+        final $returnType ret = $instance;
         final String sql = "$sql";
-        try (${getConnection()};
-            final PreparedStatement stm = cnx.prepareStatement(sql)) {
+        return SQLDataSource.executeAndReturn("${tableElement.databaseName}", sql, (stm) -> {
             ${setParameters(filters.children, element) ?: "// Without conditions"}
-            try (final ResultSet res = stm.executeQuery()) {
-                $parseResult (res.next()) {
-                    $mapAttributes
-                }
-                return ret;
+        }, (res) -> {
+            $parseResult (res.next()) {
+                $mapAttributes
             }
-        } catch (SQLException throwables) {
-            ${throwException("com.github.gr3gdev.jdbc.dao.QueryType.SELECT", element.parameters)}
-        }
+            return ret;
+        });
     }
         """
+        } else {
+            """
+    @Override
+    public $returnType ${element.simpleName}(${joinParameters(element)}) {
+        final String sql = "$sql";
+        return SQLDataSource.executeAndReturn("${tableElement.databaseName}", sql, (stm) -> {
+            ${setParameters(filters.children, element) ?: "// Without conditions"}
+        }, (res) -> {
+            final $returnType ret;
+            $parseResult (res.next()) {
+                $mapAttributes
+                return ret;
+            }
+            return java.util.Optional.empty();
+        });
+    }
+        """
+        }
         return Pair(imports(), content)
     }
 
@@ -60,17 +70,17 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
         val obj = "elt"
         var beforeMapping = ""
         var afterMapping = ""
-        beforeMapping = "final ${tableElement.classType!!} elt = new ${tableElement.classType}();\n$tab$tab$tab$tab$tab"
-        if (collection) {
-            afterMapping = "\n$tab$tab$tab$tab${tab}ret.add(elt);"
+        beforeMapping = "final ${tableElement.classType!!} elt = new ${tableElement.classType}();\n$tab$tab$tab$tab"
+        afterMapping = if (collection) {
+            "\n$tab$tab$tab${tab}ret.add(elt);"
         } else {
-            afterMapping = "\n$tab$tab$tab$tab${tab}ret = java.util.Optional.of(elt);"
+            "\n$tab$tab$tab${tab}ret = java.util.Optional.of(elt);"
         }
         val result = ArrayList<String>()
         result(result, obj, attributes)
-        var mapAttributes = result.joinToString("\n$tab$tab$tab$tab$tab")
+        var mapAttributes = result.joinToString("\n$tab$tab$tab$tab")
         if (mapAttributes.isBlank()) {
-            mapAttributes = tableElement.columns.joinToString("\n$tab$tab$tab$tab$tab") {
+            mapAttributes = tableElement.columns.joinToString("\n$tab$tab$tab$tab") {
                 getColumnResult(tableElement, it, obj)
             }
         }
@@ -80,8 +90,8 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
     private fun getColumnResult(table: TableElement, it: ColumnElement, obj: String): String {
         return if (it.foreignKey != null) {
             """final ${it.type} ${it.fieldName} = new ${it.type}();
-                    ${getResult(table, it.foreignKey!!.getPrimaryKey().fieldName, it.fieldName, it.name())}
-                    $obj.set${it.fieldName.capitalize()}(${it.fieldName});"""
+                ${getResult(table, it.foreignKey!!.getPrimaryKey().fieldName, it.fieldName, it.name())}
+                $obj.set${it.fieldName.capitalize()}(${it.fieldName});"""
         } else {
             getResult(table, it.fieldName, obj)
         }

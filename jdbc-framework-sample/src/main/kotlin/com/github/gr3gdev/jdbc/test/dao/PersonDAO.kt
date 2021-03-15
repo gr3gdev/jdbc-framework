@@ -1,9 +1,8 @@
 package com.github.gr3gdev.jdbc.test.dao
 
-import com.github.gr3gdev.jdbc.dao.Queries
-import com.github.gr3gdev.jdbc.dao.Query
-import com.github.gr3gdev.jdbc.dao.QueryType
+import com.github.gr3gdev.jdbc.dao.*
 import com.github.gr3gdev.jdbc.test.bean.Person
+import com.github.gr3gdev.jdbc.test.bean.PersonAddress
 import java.util.*
 
 @Queries(Person::class)
@@ -14,6 +13,10 @@ interface PersonDAO {
 
     @Query(QueryType.SELECT, attributes = ["id", "firstname", "personAddress.street", "personAddress.town.name"])
     fun selectAddress(): List<Person>
+
+    @Query(QueryType.SELECT, attributes = ["id", "firstname", "personAddress.street", "personAddress.town.name"],
+            joins = [ QueryJoin(QueryJoinType.LEFT, PersonAddress::class) ])
+    fun selectAddress2(): List<Person>
 
     @Query(QueryType.SELECT, attributes = ["id", "firstname"], filters = ["firstname"])
     fun selectByName(firstname: String): Optional<Person>

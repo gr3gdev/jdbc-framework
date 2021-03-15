@@ -107,7 +107,7 @@ abstract class AbstractGeneratorTest {
         return annotation
     }
 
-    private fun mockAnnotationAttributes(annotation: AnnotationMirror, attributes: Map<String, Any?>) {
+    protected fun mockAnnotationAttributes(annotation: AnnotationMirror, attributes: Map<String, Any?>) {
         val entries = HashMap<ExecutableElement, AnnotationValue>()
         attributes.forEach { (name, value) ->
             val attributeElement = Mockito.mock(ExecutableElement::class.java)
@@ -125,14 +125,15 @@ abstract class AbstractGeneratorTest {
 
     protected fun initQuery(queryType: QueryType, methodName: String, returnType: String?,
                             parameters: List<Parameter>?,
-                            attributes: List<String>?, filters: List<String>?) {
+                            attributes: List<String>?, filters: List<String>?, joins: List<AnnotationMirror>? = null) {
         val queryName = Mockito.mock(Name::class.java)
 
         val queryAnnotation = mockAnnotation(query, Query::class)
         mockAnnotationAttributes(queryAnnotation, mapOf(
                 "type" to queryType,
                 "attributes" to attributes,
-                "filters" to filters
+                "filters" to filters,
+                "joins" to joins
         ))
         if (returnType != null) {
             val returnValue = Mockito.mock(TypeMirror::class.java)

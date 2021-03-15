@@ -14,18 +14,17 @@ class InsertGeneratorTest : AbstractGeneratorTest() {
     @Test
     fun testExecuteBatch() {
         initQuery(QueryType.INSERT, "addAll", null,
-                listOf(Parameter("java.util.List<com.github.gr3gdev.jdbc.Person>", "persons")),
+                listOf(Parameter("java.util.List<com.github.gr3gdev.jdbc.test.Person>", "persons")),
                 null, null)
-        val res = QueryGenerator.generate(processingEnvironment, table, "com.github.gr3gdev.jdbc.Person", query)
+        val res = QueryGenerator.generate(processingEnvironment, table, "com.github.gr3gdev.jdbc.test.Person", query)
         Assert.assertTrue("Import missing", res.first.containsAll(listOf("java.sql.Connection", "java.sql.PreparedStatement", "java.sql.ResultSet", "java.sql.SQLException")))
         Assert.assertEquals("""
 @Override
-public void addAll(final java.util.List<com.github.gr3gdev.jdbc.Person> persons) {
+public void addAll(final java.util.List<com.github.gr3gdev.jdbc.test.Person> persons) {
     final String sql = "INSERT INTO PERSON (FIRSTNAME, LASTNAME, BIRTHDATE, ID_ADDRESS) VALUES (?, ?, ?, ?)";
-    try (final Connection cnx = SQLDataSource.getConnection("TEST_DB");
-        final PreparedStatement stm = cnx.prepareStatement(sql)) {
+    SQLDataSource.execute("TEST_DB", sql, (stm) -> {
         int index = 0;
-        for (final com.github.gr3gdev.jdbc.Person element : persons) {
+        for (final com.github.gr3gdev.jdbc.test.Person element : persons) {
             stm.setString(1, element.getFirstname());
             stm.setString(2, element.getLastname());
             stm.setDate(3, element.getBirthdate());
@@ -36,9 +35,7 @@ public void addAll(final java.util.List<com.github.gr3gdev.jdbc.Person> persons)
                 stm.executeBatch();
             }
         }
-    } catch (SQLException throwables) {
-        throw new JDBCExecutionException(com.github.gr3gdev.jdbc.dao.QueryType.INSERT, "persons", throwables);
-    }
+    });
 }
         """.trimIndent(), res.second.trimIndent())
     }
@@ -46,29 +43,23 @@ public void addAll(final java.util.List<com.github.gr3gdev.jdbc.Person> persons)
     @Test
     fun testExecute() {
         initQuery(QueryType.INSERT, "add", null,
-                listOf(Parameter("com.github.gr3gdev.jdbc.Person", "person")),
+                listOf(Parameter("com.github.gr3gdev.jdbc.test.Person", "person")),
                 null, null)
         val res = QueryGenerator.generate(processingEnvironment, table, null, query)
         Assert.assertTrue("Import missing", res.first.containsAll(listOf("java.sql.Connection", "java.sql.PreparedStatement", "java.sql.ResultSet", "java.sql.SQLException")))
         Assert.assertEquals("""
 @Override
-public void add(final com.github.gr3gdev.jdbc.Person person) {
+public void add(final com.github.gr3gdev.jdbc.test.Person person) {
     final String sql = "INSERT INTO PERSON (FIRSTNAME, LASTNAME, BIRTHDATE, ID_ADDRESS) VALUES (?, ?, ?, ?)";
-    try (final Connection cnx = SQLDataSource.getConnection("TEST_DB");
-        final PreparedStatement stm = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    SQLDataSource.executeAndGetKey("TEST_DB", sql, (stm) -> {
         stm.setString(1, person.getFirstname());
         stm.setString(2, person.getLastname());
         stm.setDate(3, person.getBirthdate());
         stm.setLong(4, person.getAddress().getId());
         stm.executeUpdate();
-        try (final ResultSet res = stm.getGeneratedKeys()) {
-            if (res.next()) {
-                person.setId(res.getLong("ID"));
-            }
-        }
-    } catch (SQLException throwables) {
-        throw new JDBCExecutionException(com.github.gr3gdev.jdbc.dao.QueryType.INSERT, "person", throwables);
-    }
+    }, (res) -> {
+        person.setId(res.getLong("ID"));
+    });
 }
         """.trimIndent(), res.second.trimIndent())
     }

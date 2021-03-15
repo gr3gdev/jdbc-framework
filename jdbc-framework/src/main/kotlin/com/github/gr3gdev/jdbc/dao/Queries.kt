@@ -1,5 +1,6 @@
 package com.github.gr3gdev.jdbc.dao
 
+import javax.annotation.processing.Processor
 import kotlin.reflect.KClass
 
 /**
@@ -9,4 +10,7 @@ import kotlin.reflect.KClass
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class Queries(val mapTo: KClass<*>)
+annotation class Queries(
+        val mapTo: KClass<*>,
+        val implementation: KClass<*> = Processor::class
+)
