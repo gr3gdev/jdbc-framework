@@ -5,13 +5,13 @@ import com.github.gr3gdev.jdbc.metadata.Table
 
 @Table(databaseName = "test1")
 class PersonAddress {
-    @Column(primaryKey = true, autoincrement = true, sqlType = "LONG")
+    @Column(primaryKey = true, autoincrement = true)
     var id: Long = 0
 
-    @Column(required = true, sqlType = "VARCHAR(255)")
+    @Column
     var street: String? = null
 
-    @Column(required = true, sqlType = "LONG")
+    @Column
     var town: Town? = null
 
     override fun toString(): String {

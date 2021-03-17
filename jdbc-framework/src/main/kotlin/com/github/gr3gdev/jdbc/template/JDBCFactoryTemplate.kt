@@ -4,7 +4,7 @@ import javax.lang.model.element.Element
 
 object JDBCFactoryTemplate {
 
-    fun generate(packageName: String, imports: String, className: String, initMethodContent: String, daoImplementations: String): String {
+    fun generate(packageName: String, imports: String, className: String, initMethodContent: String?, daoImplementations: String): String {
         return """
 package $packageName;
 
@@ -28,8 +28,8 @@ public class $className {
     $daoImplementations
     // end DAO implementations
 
-}    
-        """.trimIndent()
+}
+""".trimIndent()
     }
 
     fun getter(it: Pair<Element, String?>): String {

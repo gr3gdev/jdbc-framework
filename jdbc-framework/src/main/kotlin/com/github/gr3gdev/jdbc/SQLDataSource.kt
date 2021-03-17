@@ -1,6 +1,7 @@
 package com.github.gr3gdev.jdbc
 
 import com.github.gr3gdev.jdbc.error.JDBCExecutionException
+import com.github.gr3gdev.jdbc.version.UpgradeVersion
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.*
@@ -28,18 +29,21 @@ object SQLDataSource {
     @JvmStatic
     fun init(configFile: String, databaseName: String) {
         config = HikariConfig(configFile)
-        dataSources[databaseName] = HikariDataSource(config)
+        val datasource = HikariDataSource(config)
+        dataSources[databaseName] = datasource
+        UpgradeVersion.createSchemaVersion(datasource, databaseName)
+        UpgradeVersion.parseUpgradeFiles(datasource, databaseName)
     }
 
     @JvmStatic
     fun <R> executeAndUpdate(databaseName: String, sql: String, func: Execution<PreparedStatement, R>): R {
         getConnection(databaseName).use { cnx ->
-            cnx.prepareStatement(sql).use { stm ->
-                try {
+            try {
+                cnx.prepareStatement(sql).use { stm ->
                     return func.run(stm)
-                } catch (exc: SQLException) {
-                    throw JDBCExecutionException(sql, exc)
                 }
+            } catch (exc: SQLException) {
+                throw JDBCExecutionException(sql, exc)
             }
         }
     }
@@ -47,15 +51,15 @@ object SQLDataSource {
     @JvmStatic
     fun <R> executeAndReturn(databaseName: String, sql: String, func: StatementExecution, get: Execution<ResultSet, R>): R {
         getConnection(databaseName).use { cnx ->
-            cnx.prepareStatement(sql).use { stm ->
-                try {
+            try {
+                cnx.prepareStatement(sql).use { stm ->
                     func.run(stm)
                     stm.executeQuery().use { res ->
                         return get.run(res)
                     }
-                } catch (exc: SQLException) {
-                    throw JDBCExecutionException(sql, exc)
                 }
+            } catch (exc: SQLException) {
+                throw JDBCExecutionException(sql, exc)
             }
         }
     }
@@ -63,12 +67,12 @@ object SQLDataSource {
     @JvmStatic
     fun execute(databaseName: String, sql: String, func: StatementExecution) {
         getConnection(databaseName).use { cnx ->
-            cnx.prepareStatement(sql).use { stm ->
-                try {
+            try {
+                cnx.prepareStatement(sql).use { stm ->
                     func.run(stm)
-                } catch (exc: SQLException) {
-                    throw JDBCExecutionException(sql, exc)
                 }
+            } catch (exc: SQLException) {
+                throw JDBCExecutionException(sql, exc)
             }
         }
     }
@@ -78,21 +82,22 @@ object SQLDataSource {
                          func: StatementExecution,
                          getKey: ResultSetExecution) {
         getConnection(databaseName).use { cnx ->
-            cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { stm ->
-                try {
+            try {
+                cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { stm ->
                     func.run(stm)
                     stm.generatedKeys.use { res ->
                         if (res.next()) {
                             getKey.run(res)
                         }
                     }
-                } catch (exc: SQLException) {
-                    throw JDBCExecutionException(sql, exc)
                 }
+            } catch (exc: SQLException) {
+                throw JDBCExecutionException(sql, exc)
             }
         }
     }
 
-    private fun getConnection(databaseName: String): Connection = dataSources[databaseName]?.connection ?: throw RuntimeException("Database '$databaseName' not found")
+    private fun getConnection(databaseName: String): Connection = dataSources[databaseName]?.connection
+            ?: throw RuntimeException("Database '$databaseName' not found")
 
 }

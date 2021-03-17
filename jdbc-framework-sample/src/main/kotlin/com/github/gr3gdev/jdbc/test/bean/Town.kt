@@ -5,10 +5,10 @@ import com.github.gr3gdev.jdbc.metadata.Table
 
 @Table(databaseName = "test1")
 class Town {
-    @Column(primaryKey = true, autoincrement = true, sqlType = "LONG")
+    @Column(primaryKey = true, autoincrement = true)
     var id: Long = 0
 
-    @Column(required = true, sqlType = "VARCHAR(40)")
+    @Column
     lateinit var name: String
 
     override fun toString(): String {

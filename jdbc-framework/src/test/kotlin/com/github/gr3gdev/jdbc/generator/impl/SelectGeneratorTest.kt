@@ -2,6 +2,7 @@ package com.github.gr3gdev.jdbc.generator.impl
 
 import com.github.gr3gdev.jdbc.dao.QueryJoinType
 import com.github.gr3gdev.jdbc.dao.QueryType
+import com.github.gr3gdev.jdbc.error.JDBCConfigurationException
 import com.github.gr3gdev.jdbc.generator.AbstractGeneratorTest
 import com.github.gr3gdev.jdbc.generator.QueryGenerator
 import org.junit.Assert
@@ -13,6 +14,18 @@ import javax.lang.model.element.AnnotationMirror
 
 @RunWith(MockitoJUnitRunner::class)
 class SelectGeneratorTest : AbstractGeneratorTest() {
+
+    @Test
+    fun testExecuteInvalidReturn() {
+        initQuery(QueryType.SELECT, "selectById", "com.github.gr3gdev.jdbc.test.Person",
+                null, null, listOf("id"))
+        try {
+            QueryGenerator.generate(processingEnvironment, table, "com.github.gr3gdev.jdbc.test.Person", query)
+            Assert.fail()
+        } catch (exc: JDBCConfigurationException) {
+            Assert.assertEquals("Select an unique object must return Optional<com.github.gr3gdev.jdbc.test.Person>", exc.message)
+        }
+    }
 
     @Test
     fun testExecute() {

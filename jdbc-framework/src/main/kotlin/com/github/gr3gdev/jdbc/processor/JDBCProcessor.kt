@@ -6,20 +6,17 @@ import com.github.gr3gdev.jdbc.generator.JDBCGenerator
 import com.github.gr3gdev.jdbc.metadata.Table
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.RoundEnvironment
+import javax.annotation.processing.SupportedAnnotationTypes
+import javax.annotation.processing.SupportedSourceVersion
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 
+@SupportedAnnotationTypes(value = [
+    "com.github.gr3gdev.jdbc.JDBC",
+    "com.github.gr3gdev.jdbc.metadata.Table",
+    "com.github.gr3gdev.jdbc.dao.Queries"])
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 class JDBCProcessor : AbstractProcessor() {
-
-    override fun getSupportedSourceVersion(): SourceVersion {
-        return SourceVersion.latestSupported()
-    }
-
-    override fun getSupportedAnnotationTypes(): MutableSet<String> {
-        return mutableSetOf(JDBC::class.java.name,
-                Table::class.java.name,
-                Queries::class.java.name)
-    }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
         try {
@@ -34,7 +31,7 @@ class JDBCProcessor : AbstractProcessor() {
             }
         } catch (exc: Exception) {
             exc.printStackTrace()
-            throw RuntimeException(exc)
+            throw exc
         }
         return true
     }

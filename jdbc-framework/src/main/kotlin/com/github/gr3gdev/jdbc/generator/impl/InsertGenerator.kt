@@ -20,6 +20,9 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
                     .filter { !it.autoincrement }
                     .map { it.fieldName }
         }
+        if (element.parameters.isEmpty()) {
+            throw JDBCConfigurationException("Insert must have one parameter !")
+        }
         if (element.parameters.size > 1) {
             throw JDBCConfigurationException("Insert must have only one parameter !")
         }

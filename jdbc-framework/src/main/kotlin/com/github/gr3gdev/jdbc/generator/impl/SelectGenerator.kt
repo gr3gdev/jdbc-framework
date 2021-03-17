@@ -20,7 +20,7 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
         val instance = pair.first
         val collection = pair.second
         if (!collection && !returnType.toString().startsWith("java.util.Optional")) {
-            throw JDBCConfigurationException("Select unique object must return Optional<${tableElement.classType}>")
+            throw JDBCConfigurationException("Select an unique object must return Optional<${tableElement.classType}>")
         }
         val mapAttributes = getMappingAttributes(collection, attributes)
         val parseResult = if (collection) {
@@ -78,12 +78,7 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
         }
         val result = ArrayList<String>()
         result(result, obj, attributes)
-        var mapAttributes = result.joinToString("\n$tab$tab$tab$tab")
-        if (mapAttributes.isBlank()) {
-            mapAttributes = tableElement.columns.joinToString("\n$tab$tab$tab$tab") {
-                getColumnResult(tableElement, it, obj)
-            }
-        }
+        val mapAttributes = result.joinToString("\n$tab$tab$tab$tab")
         return "$beforeMapping$mapAttributes$afterMapping"
     }
 

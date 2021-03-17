@@ -4,6 +4,5 @@ package com.github.gr3gdev.jdbc
 @Retention(AnnotationRetention.SOURCE)
 annotation class JdbcConf(
         val configFile: String,
-        val databaseName: String = "default",
-        val autoincrementSyntax: String = "AUTO_INCREMENT"
+        val databaseName: String = "default"
 )

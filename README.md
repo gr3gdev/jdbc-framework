@@ -26,7 +26,6 @@ Annotation de configuration des bases de données.
 |-------------------|------|-----------------|-----------------------------------------------------------------------------------|
 |configFile         |String|                 |Chemin dans le classpath vers le fichier properties de configuration (HikariConfig)|
 |databaseName       |String|default          |Nom de la base de données associée à la configuration                              |
-|autoincrementSyntax|String|AUTO_INCREMENT   |Syntaxe SQL pour l'auto-incrément de la colonne                                    |
 
 Exemple de syntaxe :
 
@@ -69,8 +68,6 @@ Annotations pour définir la structure d'une table.
 |-------------------|-------|-----------------|-----------------------------------------------|
 |primaryKey         |Boolean|false            |Vrai si la colonne est de type clé primaire    |
 |autoincrement      |Boolean|false            |Vrai si la colonne s'auto incrémente           |
-|required           |Boolean|false            |Vrai si la colonne est obligatoire             |
-|sqlType            |String |                 |Type SQL pour la colonne                       |
 
 Exemple de syntaxe :
 

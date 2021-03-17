@@ -6,10 +6,10 @@ import com.github.gr3gdev.jdbc.metadata.Table;
 @Table(databaseName = "test2")
 public class House {
 
-    @Column(primaryKey = true, autoincrement = true, sqlType = "INT")
+    @Column(primaryKey = true, autoincrement = true)
     private int id;
 
-    @Column(required = true, sqlType = "VARCHAR(50)")
+    @Column
     private String name;
 
     public int getId() {

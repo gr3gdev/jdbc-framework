@@ -9,6 +9,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.2")
     testImplementation("junit:junit:4.13")
     testImplementation("org.mockito:mockito-core:2.21.0")
+    testImplementation("com.h2database:h2:1.4.200")
 }
 
 tasks {

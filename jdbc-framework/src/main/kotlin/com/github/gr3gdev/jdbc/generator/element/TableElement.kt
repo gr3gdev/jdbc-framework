@@ -19,13 +19,10 @@ internal class TableElement(private val processingEnv: ProcessingEnvironment, ta
                 .map {
                     val annotation = ReflectUtils.getAnnotation(it, Column::class)
                     val ce = ColumnElement(
-                            table.simpleName.toString().camelToSnakeCase(),
                             it.simpleName.toString(),
                             it.asType(),
                             ReflectUtils.getAnnotationAttributeValue(annotation, "primaryKey") as Boolean? ?: false,
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrement") as Boolean? ?: false,
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "required") as Boolean? ?: false,
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "sqlType") as String? ?: "UNDEFINED"
+                            ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrement") as Boolean? ?: false
                     )
                     val columnType = processingEnv.typeUtils.asElement(it.asType())
                     if (columnType != null && ReflectUtils.isAnnotationPresent(columnType, Table::class)) {

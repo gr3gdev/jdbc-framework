@@ -6,22 +6,22 @@ import java.util.*
 
 @Table(databaseName = "test1")
 class Person {
-    @Column(primaryKey = true, autoincrement = true, sqlType = "LONG")
+    @Column(primaryKey = true, autoincrement = true)
     var id: Long = 0
 
-    @Column(sqlType = "VARCHAR(40)")
+    @Column
     lateinit var firstname: String
 
-    @Column(required = false, sqlType = "INT")
+    @Column
     var age: Int? = null
 
-    @Column(required = false, sqlType = "BOOLEAN")
+    @Column
     var birthday: Date? = null
 
-    @Column(required = true, sqlType = "LONG")
+    @Column
     lateinit var personAddress: PersonAddress
 
-    @Column(required = false, sqlType = "LONG")
+    @Column
     var car: Car? = null
 
     var test = true

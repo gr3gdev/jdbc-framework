@@ -7,7 +7,5 @@ package com.github.gr3gdev.jdbc.metadata
 @Retention(AnnotationRetention.SOURCE)
 annotation class Column(
         val primaryKey: Boolean = false,
-        val autoincrement: Boolean = false,
-        val required: Boolean = false,
-        val sqlType: String
+        val autoincrement: Boolean = false
 )
