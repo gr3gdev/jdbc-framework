@@ -1,16 +1,8 @@
 package com.github.gr3gdev.jdbc.test
 
-import com.github.gr3gdev.jdbc.JDBC
-import com.github.gr3gdev.jdbc.JdbcConf
 import com.github.gr3gdev.jdbc.test.bean.*
 import com.github.gr3gdev.jdbc.test.jdbc.JDBCFactory
 import java.time.LocalDateTime
-
-@JDBC([
-    JdbcConf("/datasource1.properties", "test1"),
-    JdbcConf("/datasource2.properties", "test2")
-])
-class H2Test
 
 fun test1() {
     val carDAO = JDBCFactory.getCarDAO()
@@ -67,7 +59,7 @@ fun test2() {
 
 fun main() {
     println(LocalDateTime.now())
-    JDBCFactory.init()
+    DAORepository.init()
 
     println(LocalDateTime.now())
     test1()

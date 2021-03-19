@@ -69,7 +69,7 @@ CREATE TABLE SCHEMA_VERSION (
             val updateSql = "UPDATE SCHEMA_VERSION SET CHECKSUM = ?, STATUS = ? WHERE VERSION = ? AND PART = ? AND FILE = ?"
             val md = MessageDigest.getInstance("MD5")
             val listVersion = getListVersions(hikariDataSource)
-            File(databaseResource.toURI())
+            File(databaseResource.file)
                     .walk(FileWalkDirection.TOP_DOWN)
                     .filter { it.extension == "sql" }
                     .sortedBy {
