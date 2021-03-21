@@ -12,12 +12,14 @@ import java.security.MessageDigest
 
 class UpdateVersionTest {
 
+    private lateinit var databaseFile: File
     private lateinit var folder: File
     private lateinit var dataSource: HikariDataSource
 
     @Before
     fun `init datasource`() {
         val classpathFolder = File(UpgradeVersion::class.java.getResource("/").toURI())
+        databaseFile = File(classpathFolder, "test.properties")
         folder = File(classpathFolder, "test")
         folder.mkdirs()
 
@@ -31,6 +33,7 @@ class UpdateVersionTest {
     fun `delete database folder`() {
         dataSource.close()
         folder.deleteRecursively()
+        databaseFile.deleteRecursively()
     }
 
     @Test
@@ -58,7 +61,7 @@ class UpdateVersionTest {
     }
 
     @Test
-    fun `test upgrade - database folder does not exists`() {
+    fun `test upgrade - database file does not exists`() {
         val config = HikariConfig()
         config.jdbcUrl = "jdbc:h2:mem:test3"
         val dataSource2 = HikariDataSource(config)
@@ -69,25 +72,36 @@ class UpdateVersionTest {
     }
 
     @Test
-    fun `test upgrade - script without version folder`() {
-        val version = File(folder, "NotVersion")
-        version.mkdirs()
-        val script = File(version, "script_1.sql")
-        script.writeText("SELECT 1")
+    fun `test upgrade - script invalid version`() {
+        databaseFile.writeText("""
+V2.45.test.1=/test/script_1.sql
+v1.0.description=/test/script_2.sql
+        """.trimIndent())
 
         try {
             UpgradeVersion.parseUpgradeFiles(dataSource, "test")
             fail("Exception expected")
         } catch (exc: RuntimeException) {
-            assertEquals("SQL file 'script_1.sql' must be under a version directory : Vx.y.z (ex: V1.0.0) => [NotVersion]", exc.message)
+            assertEquals("Property file must contains key : vX_Y_Z.alphanumeric_description.order [invalid 'v1.0.description']", exc.message)
+        }
+    }
+
+    @Test
+    fun `test upgrade - script file does not exists`() {
+        databaseFile.writeText("v1_0_1.test.1=/test/script_1.sql")
+
+        try {
+            UpgradeVersion.parseUpgradeFiles(dataSource, "test")
+            fail("Exception expected")
+        } catch (exc: RuntimeException) {
+            assertEquals("File /test/script_1.sql does not exists !", exc.message)
         }
     }
 
     @Test
     fun `test successful upgrade`() {
-        val version1 = File(folder, "V1.0.0")
-        version1.mkdirs()
-        val script = File(version1, "script_1.sql")
+        databaseFile.writeText("v1_0_0.description_de_test.1=/test/script_1.sql")
+        val script = File(folder, "script_1.sql")
         script.writeText("SELECT 1")
 
         val md = MessageDigest.getInstance("MD5")
@@ -96,25 +110,25 @@ class UpdateVersionTest {
         val list = UpgradeVersion.parseUpgradeFiles(dataSource, "test")
         assertNotNull(list!!)
         assertEquals(1, list.size)
-        assertEquals("V1.0.0", list[0].version)
-        assertEquals("1", list[0].part)
-        assertEquals("script_1.sql", list[0].file)
+        assertEquals("v1.0.0", list[0].version)
+        assertEquals("1", list[0].order)
+        assertEquals("description de test", list[0].description)
         assertEquals(checksum, list[0].checksum)
         assertEquals("1", list[0].status)
     }
 
     @Test
     fun `test upgrade multiple`() {
-        val version1 = File(folder, "V1.0.0")
-        version1.mkdirs()
-        val script1OK = File(version1, "script_1.sql")
+        databaseFile.writeText("""
+v1_0_0.description_pour_script_1.1=/test/script_1.sql
+v1_0_0.description_pour_script_2.2=/test/script_2.sql
+v1_1_0.version_suivante.1=/test/script_3.sql
+        """.trimIndent())
+        val script1OK = File(folder, "script_1.sql")
         script1OK.writeText("SELECT 1")
-        val script2KO = File(version1, "script_2.sql")
+        val script2KO = File(folder, "script_2.sql")
         script2KO.writeText("ERROR")
-
-        val version2 = File(folder, "V1.1.0")
-        version2.mkdirs()
-        val script3OK = File(version2, "script_3.sql")
+        val script3OK = File(folder, "script_3.sql")
         script3OK.writeText("CREATE TABLE T1 (ID INT PRIMARY KEY)")
 
         val md = MessageDigest.getInstance("MD5")
@@ -126,17 +140,17 @@ class UpdateVersionTest {
         assertNotNull(list!!)
         assertEquals(3, list.size)
 
-        assertEquals("V1.0.0", list[0].version)
-        assertEquals("V1.0.0", list[1].version)
-        assertEquals("V1.1.0", list[2].version)
+        assertEquals("v1.0.0", list[0].version)
+        assertEquals("v1.0.0", list[1].version)
+        assertEquals("v1.1.0", list[2].version)
 
-        assertEquals("1", list[0].part)
-        assertEquals("2", list[1].part)
-        assertEquals("1", list[2].part)
+        assertEquals("1", list[0].order)
+        assertEquals("2", list[1].order)
+        assertEquals("1", list[2].order)
 
-        assertEquals("script_1.sql", list[0].file)
-        assertEquals("script_2.sql", list[1].file)
-        assertEquals("script_3.sql", list[2].file)
+        assertEquals("description pour script 1", list[0].description)
+        assertEquals("description pour script 2", list[1].description)
+        assertEquals("version suivante", list[2].description)
 
         assertEquals(checksumScript1, list[0].checksum)
         assertEquals(checksumScript2, list[1].checksum)
@@ -159,9 +173,10 @@ class UpdateVersionTest {
 
     @Test
     fun `test upgrade checksum change`() {
-        val version1 = File(folder, "V1.0.0")
-        version1.mkdirs()
-        val script = File(version1, "script_1.sql")
+        databaseFile.writeText("""
+v1_0_0.test_checksum.1=/test/script_1.sql
+        """.trimIndent())
+        val script = File(folder, "script_1.sql")
         script.writeText("CREATE TABLE T1 (ID INT, NAME TEXT)")
 
         val md = MessageDigest.getInstance("MD5")
@@ -170,9 +185,9 @@ class UpdateVersionTest {
         val list = UpgradeVersion.parseUpgradeFiles(dataSource, "test")
         assertNotNull(list!!)
         assertEquals(1, list.size)
-        assertEquals("V1.0.0", list[0].version)
-        assertEquals("1", list[0].part)
-        assertEquals("script_1.sql", list[0].file)
+        assertEquals("v1.0.0", list[0].version)
+        assertEquals("1", list[0].order)
+        assertEquals("test checksum", list[0].description)
         assertEquals(checksum, list[0].checksum)
         assertEquals("1", list[0].status)
 
@@ -182,15 +197,16 @@ class UpdateVersionTest {
             UpgradeVersion.parseUpgradeFiles(dataSource, "test")
             fail("Exception expected")
         } catch (exc: RuntimeException) {
-            assertEquals("Content of file 'script_1.sql' has changed !", exc.message)
+            assertEquals("Content of 'test checksum' has changed !", exc.message)
         }
     }
 
     @Test
     fun `test upgrade order change`() {
-        val version1 = File(folder, "V1.0.0")
-        version1.mkdirs()
-        val script = File(version1, "script_2.sql")
+        databaseFile.writeText("""
+v1_0_0.test.1=/test/script_2.sql
+        """.trimIndent())
+        val script = File(folder, "script_2.sql")
         script.writeText("CREATE TABLE T1 (ID INT PRIMARY KEY, NAME TEXT)")
 
         val md = MessageDigest.getInstance("MD5")
@@ -199,20 +215,24 @@ class UpdateVersionTest {
         val list = UpgradeVersion.parseUpgradeFiles(dataSource, "test")
         assertNotNull(list!!)
         assertEquals(1, list.size)
-        assertEquals("V1.0.0", list[0].version)
-        assertEquals("1", list[0].part)
-        assertEquals("script_2.sql", list[0].file)
+        assertEquals("v1.0.0", list[0].version)
+        assertEquals("1", list[0].order)
+        assertEquals("test", list[0].description)
         assertEquals(checksum, list[0].checksum)
         assertEquals("1", list[0].status)
 
-        val script1 = File(version1, "script_1.sql")
+        databaseFile.writeText("""
+v1_0_0.test1.1=/test/script_1.sql
+v1_0_0.test2.2=/test/script_2.sql
+        """.trimIndent())
+        val script1 = File(folder, "script_1.sql")
         script1.writeText("SELECT 1")
 
         try {
             UpgradeVersion.parseUpgradeFiles(dataSource, "test")
             fail("Exception expected")
         } catch (exc: RuntimeException) {
-            assertEquals("Order of file 'script_2.sql' has changed !", exc.message)
+            assertEquals("Order of 'test' has changed !", exc.message)
         }
     }
 
