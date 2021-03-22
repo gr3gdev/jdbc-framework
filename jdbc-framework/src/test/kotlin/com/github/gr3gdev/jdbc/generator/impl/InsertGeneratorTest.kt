@@ -58,7 +58,7 @@ public void add(final com.github.gr3gdev.jdbc.test.Person person) {
         stm.setLong(4, person.getAddress().getId());
         stm.executeUpdate();
     }, (res) -> {
-        person.setId(res.getLong("ID"));
+        person.setId(res.getLong(1));
     });
 }
         """.trimIndent(), res.second.trimIndent())
