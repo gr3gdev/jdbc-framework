@@ -37,7 +37,7 @@ object SQLDataSource {
     
     @JvmStatic
     fun close() {
-        datasource.close()
+        dataSources.forEach { (_, ds) -> ds.close() }
     }
 
     @JvmStatic
