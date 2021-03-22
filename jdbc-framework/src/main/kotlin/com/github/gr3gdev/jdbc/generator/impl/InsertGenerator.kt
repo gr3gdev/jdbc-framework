@@ -41,7 +41,7 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
             insertAttributes.joinToString(", ") { "?" }
         })"
         val setID = tableElement.columns.filter { it.primaryKey }.joinToString("\n$tab$tab$tab$tab") {
-            "${parameter.simpleName}.set${it.fieldName.capitalize()}(res.get${mappingTypes[it.type.toString()]}(\"${it.name()}\"));"
+            "${parameter.simpleName}.set${it.fieldName.capitalize()}(res.get${mappingTypes[it.type.toString()]}(1));"
         }
         val execution = if (isBatch) {
             """SQLDataSource.execute("${tableElement.databaseName}", sql, (stm) -> {
