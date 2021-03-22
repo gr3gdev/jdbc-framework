@@ -40,6 +40,7 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
         }) VALUES (${
             insertAttributes.joinToString(", ") { "?" }
         })"
+        val autoincrement = tableElement.columns.filter { it.primaryKey }.all { it.autoincrement }
         val setID = tableElement.columns.filter { it.primaryKey }.joinToString("\n$tab$tab$tab$tab") {
             "${parameter.simpleName}.set${it.fieldName.capitalize()}(res.get${mappingTypes[it.type.toString()]}(1));"
         }
@@ -55,12 +56,17 @@ internal class InsertGenerator(private val tableElement: TableElement) : QueryGe
                 }
             }
         });"""
-        } else {
+        } else if (autoincrement) {
             """SQLDataSource.executeAndGetKey("${tableElement.databaseName}", sql, (stm) -> {
             ${setParameters(parameter.simpleName.toString(), insertAttributes, "\n$tab$tab$tab")}
             stm.executeUpdate();
         }, (res) -> {
             $setID
+        });"""
+        } else {
+            """SQLDataSource.execute("${tableElement.databaseName}", sql, (stm) -> {
+            ${setParameters(parameter.simpleName.toString(), insertAttributes, "\n$tab$tab$tab")}
+            stm.executeUpdate();
         });"""
         }
         val content = """

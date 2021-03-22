@@ -36,7 +36,7 @@ abstract class AbstractTest {
             val element = mockElement(it.name, it.clazz, Element::class.java, type)
             val columnAnnotation = mockAnnotation(element, Column::class)
             mockAnnotationAttributes(columnAnnotation, mapOf(
-                    "primaryKey" to (it.name == "id"),
+                    "primaryKey" to (it.name.startsWith("id")),
                     "autoincrement" to (it.name == "id")
             ))
             element
