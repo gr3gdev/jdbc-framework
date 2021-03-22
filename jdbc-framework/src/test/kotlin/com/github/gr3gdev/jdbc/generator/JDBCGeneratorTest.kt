@@ -160,7 +160,7 @@ class MyObjectDAOImpl implements com.github.gr3gdev.jdbc.test.dao.MyObjectDAO {
             stm.setString(1, obj.getName());
             stm.executeUpdate();
         }, (res) -> {
-            obj.setId(res.getLong("ID"));
+            obj.setId(res.getLong(1));
         });
     }
             
