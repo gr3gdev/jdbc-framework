@@ -34,6 +34,11 @@ object SQLDataSource {
         UpgradeVersion.createSchemaVersion(datasource, databaseName)
         UpgradeVersion.parseUpgradeFiles(datasource, databaseName)
     }
+    
+    @JvmStatic
+    fun close() {
+        datasource.close()
+    }
 
     @JvmStatic
     fun <R> executeAndUpdate(databaseName: String, sql: String, func: Execution<PreparedStatement, R>): R {
