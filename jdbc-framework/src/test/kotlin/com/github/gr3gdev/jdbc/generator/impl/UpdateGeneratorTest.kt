@@ -34,7 +34,7 @@ class UpdateGeneratorTest : AbstractGeneratorTest() {
         Assert.assertEquals("""
 @Override
 public int update(final com.github.gr3gdev.jdbc.test.Person person) {
-    final String sql = "UPDATE PERSON person_1 SET person_1.ID_ADDRESS = ?, person_1.FIRSTNAME = ?, person_1.LASTNAME = ? WHERE person_1.ID = ?";
+    final String sql = "UPDATE PERSON SET ID_ADDRESS = ?, FIRSTNAME = ?, LASTNAME = ? WHERE ID = ?";
     return SQLDataSource.executeAndUpdate("TEST_DB", sql, (stm) -> {
         stm.setLong(1, person.getAddress().getId());
         stm.setString(2, person.getFirstname());
@@ -56,7 +56,7 @@ public int update(final com.github.gr3gdev.jdbc.test.Person person) {
         Assert.assertEquals("""
 @Override
 public int update(final java.lang.String lastname, final java.lang.String firstname, final java.lang.Long id) {
-    final String sql = "UPDATE PERSON person_1 SET person_1.FIRSTNAME = ?, person_1.LASTNAME = ? WHERE person_1.ID = ?";
+    final String sql = "UPDATE PERSON SET FIRSTNAME = ?, LASTNAME = ? WHERE ID = ?";
     return SQLDataSource.executeAndUpdate("TEST_DB", sql, (stm) -> {
         stm.setString(1, firstname);
         stm.setString(2, lastname);

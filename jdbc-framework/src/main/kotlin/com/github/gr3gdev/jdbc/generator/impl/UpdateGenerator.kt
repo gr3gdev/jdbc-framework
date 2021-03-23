@@ -11,27 +11,26 @@ internal class UpdateGenerator(private val tableElement: TableElement) : QueryGe
 
     override fun execute(element: Element, attributes: GetterStructure, filters: GetterStructure): Pair<List<String>, String> {
         (element as ExecutableElement)
-        val alias = attributes.alias
         if (attributes.children.isEmpty()) {
             throw JDBCConfigurationException("Attributes must be defined for UPDATE")
         }
         if (element.returnType.toString() != "int") {
             throw JDBCConfigurationException("Query must be return int")
         }
-        var sql = "UPDATE ${tableElement.name} $alias SET ${
+        var sql = "UPDATE ${tableElement.name} SET ${
             attributes.children
                     .filter { it.column != null }
                     .joinToString(", ") {
                         val column = it.column!!
                         if (column.foreignKey != null) {
-                            "$alias.${column.foreignKey!!.getPrimaryKey().name()}_${column.foreignKey!!.name} = ?"
+                            "${column.foreignKey!!.getPrimaryKey().name()}_${column.foreignKey!!.name} = ?"
                         } else {
-                            "$alias.${column.name()} = ?"
+                            "${column.name()} = ?"
                         }
                     }
         }"
         if (!filters.children.isNullOrEmpty()) {
-            sql += " WHERE ${getFilters(alias, filters)}"
+            sql += " WHERE ${getFilters(null, filters)}"
         }
         val content = """
     @Override

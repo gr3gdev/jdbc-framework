@@ -68,8 +68,8 @@ internal class SelectGenerator(private val tableElement: TableElement) : QueryGe
     private fun getMappingAttributes(collection: Boolean, attributes: GetterStructure): String {
         val tab = JDBCProcessor.TAB
         val obj = "elt"
-        var beforeMapping = ""
-        var afterMapping = ""
+        val beforeMapping: String
+        val afterMapping: String
         beforeMapping = "final ${tableElement.classType!!} elt = new ${tableElement.classType}();\n$tab$tab$tab$tab"
         afterMapping = if (collection) {
             "\n$tab$tab$tab${tab}ret.add(elt);"

@@ -167,7 +167,7 @@ class MyObjectDAOImpl implements com.github.gr3gdev.jdbc.test.dao.MyObjectDAO {
 
     @Override
     public int update(final long id, final java.lang.String name) {
-        final String sql = "UPDATE MY_OBJECT my_object_1 SET my_object_1.ID = ?, my_object_1.NAME = ?";
+        final String sql = "UPDATE MY_OBJECT SET ID = ?, NAME = ?";
         return SQLDataSource.executeAndUpdate("db1", sql, (stm) -> {
             stm.setLong(1, id);
             stm.setString(2, name);
@@ -197,7 +197,7 @@ class MyObjectDAOImpl implements com.github.gr3gdev.jdbc.test.dao.MyObjectDAO {
 
     @Override
     public int delete() {
-        final String sql = "DELETE FROM MY_OBJECT my_object_1 WHERE my_object_1.ID = ?";
+        final String sql = "DELETE FROM MY_OBJECT WHERE ID = ?";
         return SQLDataSource.executeAndUpdate("db1", sql, (stm) -> {
             stm.setLong(1, null);
             return stm.executeUpdate();

@@ -11,14 +11,13 @@ internal class DeleteGenerator(private val tableElement: TableElement) : QueryGe
 
     override fun execute(element: Element, attributes: GetterStructure, filters: GetterStructure): Pair<List<String>, String> {
         (element as ExecutableElement)
-        val alias = attributes.alias
         if (filters.children.isEmpty()) {
             throw JDBCConfigurationException("Filters must be defined for DELETE")
         }
         if (element.returnType.toString() != "int") {
             throw JDBCConfigurationException("Query must be return int")
         }
-        val sql = "DELETE FROM ${tableElement.name} $alias WHERE ${getFilters(alias, filters)}"
+        val sql = "DELETE FROM ${tableElement.name} WHERE ${getFilters(null, filters)}"
         val content = """
     @Override
     public int ${element.simpleName}(${joinParameters(element)}) {

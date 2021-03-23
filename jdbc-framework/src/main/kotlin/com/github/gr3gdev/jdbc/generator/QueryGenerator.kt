@@ -53,14 +53,22 @@ internal abstract class QueryGenerator(private val tableElement: TableElement) {
 
     abstract fun execute(element: Element, attributes: GetterStructure, filters: GetterStructure): Pair<List<String>, String>
 
-    protected fun getFilters(alias: String, filters: GetterStructure): String {
+    protected fun getFilters(alias: String?, filters: GetterStructure): String {
         return filters.children.filter { it.column != null }
                 .joinToString(" AND ") {
                     val column = it.column!!
-                    if (column.foreignKey != null) {
-                        "$alias.${column.foreignKey!!.getPrimaryKey().name()}_${column.foreignKey!!.name} = ?"
+                    if (alias != null) {
+                        if (column.foreignKey != null) {
+                            "$alias.${column.foreignKey!!.getPrimaryKey().name()}_${column.foreignKey!!.name} = ?"
+                        } else {
+                            "$alias.${column.name()} = ?"
+                        }
                     } else {
-                        "$alias.${column.name()} = ?"
+                        if (column.foreignKey != null) {
+                            "${column.foreignKey!!.getPrimaryKey().name()}_${column.foreignKey!!.name} = ?"
+                        } else {
+                            "${column.name()} = ?"
+                        }
                     }
                 }
     }

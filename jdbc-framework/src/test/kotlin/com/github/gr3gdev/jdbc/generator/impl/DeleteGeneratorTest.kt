@@ -21,7 +21,7 @@ class DeleteGeneratorTest : AbstractGeneratorTest() {
         Assert.assertEquals("""
 @Override
 public int delete(final com.github.gr3gdev.jdbc.test.Person person) {
-    final String sql = "DELETE FROM PERSON person_1 WHERE person_1.ID = ?";
+    final String sql = "DELETE FROM PERSON WHERE ID = ?";
     return SQLDataSource.executeAndUpdate("TEST_DB", sql, (stm) -> {
         stm.setLong(1, person.getId());
         return stm.executeUpdate();
@@ -40,7 +40,7 @@ public int delete(final com.github.gr3gdev.jdbc.test.Person person) {
         Assert.assertEquals("""
 @Override
 public int deleteById(final java.lang.Long id) {
-    final String sql = "DELETE FROM PERSON person_1 WHERE person_1.ID = ?";
+    final String sql = "DELETE FROM PERSON WHERE ID = ?";
     return SQLDataSource.executeAndUpdate("TEST_DB", sql, (stm) -> {
         stm.setLong(1, id);
         return stm.executeUpdate();
