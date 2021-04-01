@@ -1,0 +1,9 @@
+
+    @Override
+    public int updateAll(final java.lang.String firstname) {
+        final String sql = "UPDATE PERSON SET FIRSTNAME = ?";
+        return SQLDataSource.executeAndUpdate("MyDB", sql, (stm) -> {
+            stm.setString(1, firstname);
+            return stm.executeUpdate();
+        });
+    }

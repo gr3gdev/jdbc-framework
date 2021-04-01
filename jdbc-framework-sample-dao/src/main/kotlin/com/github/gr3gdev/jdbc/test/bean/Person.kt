@@ -2,7 +2,7 @@ package com.github.gr3gdev.jdbc.test.bean
 
 import com.github.gr3gdev.jdbc.metadata.Column
 import com.github.gr3gdev.jdbc.metadata.Table
-import java.util.*
+import java.sql.Date
 
 @Table(databaseName = "test1")
 class Person {

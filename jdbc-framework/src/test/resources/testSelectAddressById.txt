@@ -1,0 +1,26 @@
+
+    @Override
+    public java.util.Optional<com.github.gr3gdev.jdbc.test.Address> selectAddressById(final java.lang.Long id) {
+        final String sql = "SELECT ADDRESS.ID as ADDRESS_ID, " +
+            "ADDRESS.STREET as ADDRESS_STREET, " +
+            "TOWN.ID as TOWN_ID, " +
+            "TOWN.NAME as TOWN_NAME FROM PERSON " +
+            "INNER JOIN ADDRESS ON ADDRESS.ID = PERSON.ID_ADDRESS " +
+            "INNER JOIN TOWN ON TOWN.ID = ADDRESS.ID_TOWN " +
+            "WHERE PERSON.ID = ?";
+        return SQLDataSource.executeAndReturn("MyDB", sql, (stm) -> {
+            stm.setLong(1, id);
+        }, (res) -> {
+            if (res.next()) {
+                final com.github.gr3gdev.jdbc.test.Address address = new com.github.gr3gdev.jdbc.test.Address();
+                final com.github.gr3gdev.jdbc.test.Town town = new com.github.gr3gdev.jdbc.test.Town();
+                address.setId(res.getInt("ADDRESS_ID"));
+                address.setStreet(res.getString("ADDRESS_STREET"));
+                town.setId(res.getInt("TOWN_ID"));
+                town.setName(res.getString("TOWN_NAME"));
+                address.setTown(town);
+                return java.util.Optional.of(address);
+            }
+            return java.util.Optional.empty();
+        });
+    }

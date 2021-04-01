@@ -1,0 +1,13 @@
+
+    @Override
+    public void insert(final com.github.gr3gdev.jdbc.test.Person person) {
+        final String sql = "INSERT INTO PERSON (FIRSTNAME, LASTNAME, ID_ADDRESS) VALUES (?, ?, ?)";
+        SQLDataSource.executeAndGetKey("MyDB", sql, (stm) -> {
+            stm.setString(1, person.getFirstname());
+            stm.setString(2, person.getLastname());
+            stm.setInt(3, person.getAddress().getId());
+            stm.executeUpdate();
+        }, (res) -> {
+            person.setId(res.getLong(1));
+        });
+    }

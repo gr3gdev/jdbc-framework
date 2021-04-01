@@ -1,0 +1,37 @@
+
+    @Override
+    public java.util.List<com.github.gr3gdev.jdbc.test.Person> selectPersonByPetName(final java.lang.String name) {
+        final java.util.List<com.github.gr3gdev.jdbc.test.Person> ret = new java.util.LinkedList();
+        final String sql = "SELECT PERSON.ID as PERSON_ID, " +
+            "PERSON.FIRSTNAME as PERSON_FIRSTNAME, " +
+            "PERSON.LASTNAME as PERSON_LASTNAME, " +
+            "ADDRESS.ID as ADDRESS_ID, " +
+            "ADDRESS.STREET as ADDRESS_STREET, " +
+            "TOWN.ID as TOWN_ID, " +
+            "TOWN.NAME as TOWN_NAME FROM PERSON_PET " +
+            "INNER JOIN PERSON ON PERSON.ID = PERSON_PET.ID_PERSON " +
+            "INNER JOIN ADDRESS ON ADDRESS.ID = PERSON.ID_ADDRESS " +
+            "INNER JOIN TOWN ON TOWN.ID = ADDRESS.ID_TOWN " +
+            "INNER JOIN PET ON PET.ID = PERSON_PET.ID_PET " +
+            "WHERE PET.NAME = ?";
+        return SQLDataSource.executeAndReturn("MyDB", sql, (stm) -> {
+            stm.setString(1, name);
+        }, (res) -> {
+            while (res.next()) {
+                final com.github.gr3gdev.jdbc.test.Person person = new com.github.gr3gdev.jdbc.test.Person();
+                final com.github.gr3gdev.jdbc.test.Address address = new com.github.gr3gdev.jdbc.test.Address();
+                final com.github.gr3gdev.jdbc.test.Town town = new com.github.gr3gdev.jdbc.test.Town();
+                person.setId(res.getLong("PERSON_ID"));
+                person.setFirstname(res.getString("PERSON_FIRSTNAME"));
+                person.setLastname(res.getString("PERSON_LASTNAME"));
+                address.setId(res.getInt("ADDRESS_ID"));
+                address.setStreet(res.getString("ADDRESS_STREET"));
+                town.setId(res.getInt("TOWN_ID"));
+                town.setName(res.getString("TOWN_NAME"));
+                address.setTown(town);
+                person.setAddress(address);
+                ret.add(person);
+            }
+            return ret;
+        });
+    }

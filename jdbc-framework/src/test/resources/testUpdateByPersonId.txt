@@ -1,0 +1,13 @@
+
+    @Override
+    public int updateByPersonId(final java.lang.Long id, final com.github.gr3gdev.jdbc.test.Person person) {
+        final String sql = "UPDATE PERSON SET FIRSTNAME = ?, LASTNAME = ?, ID_ADDRESS = ? " +
+            "WHERE PERSON.ID = ?";
+        return SQLDataSource.executeAndUpdate("MyDB", sql, (stm) -> {
+            stm.setString(1, person.getFirstname());
+            stm.setString(2, person.getLastname());
+            stm.setInt(3, person.getAddress().getId());
+            stm.setLong(4, id);
+            return stm.executeUpdate();
+        });
+    }

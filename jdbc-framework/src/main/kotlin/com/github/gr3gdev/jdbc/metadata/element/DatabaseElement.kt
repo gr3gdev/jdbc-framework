@@ -1,4 +1,4 @@
-package com.github.gr3gdev.jdbc.generator.element
+package com.github.gr3gdev.jdbc.metadata.element
 
 internal abstract class DatabaseElement {
 

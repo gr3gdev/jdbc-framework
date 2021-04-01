@@ -40,6 +40,7 @@ object SQLDataSource {
         dataSources.forEach { (_, ds) -> ds.close() }
     }
 
+    @kotlin.jvm.Throws(JDBCExecutionException::class)
     @JvmStatic
     fun <R> executeAndUpdate(databaseName: String, sql: String, func: Execution<PreparedStatement, R>): R {
         getConnection(databaseName).use { cnx ->
@@ -53,6 +54,7 @@ object SQLDataSource {
         }
     }
 
+    @kotlin.jvm.Throws(JDBCExecutionException::class)
     @JvmStatic
     fun <R> executeAndReturn(databaseName: String, sql: String, func: StatementExecution, get: Execution<ResultSet, R>): R {
         getConnection(databaseName).use { cnx ->
@@ -69,6 +71,7 @@ object SQLDataSource {
         }
     }
 
+    @kotlin.jvm.Throws(JDBCExecutionException::class)
     @JvmStatic
     fun execute(databaseName: String, sql: String, func: StatementExecution) {
         getConnection(databaseName).use { cnx ->
@@ -82,6 +85,7 @@ object SQLDataSource {
         }
     }
 
+    @kotlin.jvm.Throws(JDBCExecutionException::class)
     @JvmStatic
     fun executeAndGetKey(databaseName: String, sql: String,
                          func: StatementExecution,

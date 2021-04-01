@@ -1,0 +1,16 @@
+
+    @Override
+    public java.util.Optional<com.github.gr3gdev.jdbc.test.Town> selectTown(final com.github.gr3gdev.jdbc.test.Town town) {
+        final String sql = "SELECT TOWN.NAME as TOWN_NAME FROM TOWN " +
+            "WHERE TOWN.ID = ?";
+        return SQLDataSource.executeAndReturn("MyDB", sql, (stm) -> {
+            stm.setInt(1, town.getId());
+        }, (res) -> {
+            if (res.next()) {
+                final com.github.gr3gdev.jdbc.test.Town town = new com.github.gr3gdev.jdbc.test.Town();
+                town.setName(res.getString("TOWN_NAME"));
+                return java.util.Optional.of(town);
+            }
+            return java.util.Optional.empty();
+        });
+    }

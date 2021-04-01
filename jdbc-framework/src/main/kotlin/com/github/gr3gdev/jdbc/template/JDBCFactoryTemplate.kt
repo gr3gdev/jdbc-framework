@@ -25,7 +25,7 @@ public class $className {
     }
 
     // DAO implementations
-    $daoImplementations
+$daoImplementations
     // end DAO implementations
 
 }

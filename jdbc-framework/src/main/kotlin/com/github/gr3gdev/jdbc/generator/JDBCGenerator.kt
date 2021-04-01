@@ -15,7 +15,7 @@ internal object JDBCGenerator {
         val annotation = ReflectUtils.getAnnotation(element, JDBC::class)
         val conf = ReflectUtils.getAnnotationAttributeValue(annotation, "conf") as List<*>?
         val packageName = "${processingEnv.elementUtils.getPackageOf(element)}.jdbc"
-        val initMethods = conf?.joinToString("\n$tab$tab") { confAnnotation ->
+        val initMethods = conf?.joinToString("\n${tab.repeat(2)}") { confAnnotation ->
             InitDatabaseGenerator.generate(confAnnotation as AnnotationMirror)
         }
         val fileName = "JDBCFactory"

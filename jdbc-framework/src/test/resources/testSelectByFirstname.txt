@@ -1,0 +1,19 @@
+
+    @Override
+    public java.util.List<com.github.gr3gdev.jdbc.test.Person> selectByFirstname(final java.lang.String firstname) {
+        final java.util.List<com.github.gr3gdev.jdbc.test.Person> ret = new java.util.LinkedList();
+        final String sql = "SELECT PERSON.FIRSTNAME as PERSON_FIRSTNAME, " +
+            "PERSON.LASTNAME as PERSON_LASTNAME FROM PERSON " +
+            "WHERE PERSON.FIRSTNAME = ?";
+        return SQLDataSource.executeAndReturn("MyDB", sql, (stm) -> {
+            stm.setString(1, firstname);
+        }, (res) -> {
+            while (res.next()) {
+                final com.github.gr3gdev.jdbc.test.Person person = new com.github.gr3gdev.jdbc.test.Person();
+                person.setFirstname(res.getString("PERSON_FIRSTNAME"));
+                person.setLastname(res.getString("PERSON_LASTNAME"));
+                ret.add(person);
+            }
+            return ret;
+        });
+    }

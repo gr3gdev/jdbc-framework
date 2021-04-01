@@ -1,0 +1,10 @@
+
+    @Override
+    public void insert(final java.lang.String firstname, final java.lang.String lastname) {
+        final String sql = "INSERT INTO PERSON (FIRSTNAME, LASTNAME) VALUES (?, ?)";
+        SQLDataSource.execute("MyDB", sql, (stm) -> {
+            stm.setString(1, firstname);
+            stm.setString(2, lastname);
+            stm.executeUpdate();
+        });
+    }

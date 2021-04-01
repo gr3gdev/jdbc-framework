@@ -1,0 +1,65 @@
+package com.github.gr3gdev.jdbc.test.jdbc;
+
+import com.github.gr3gdev.jdbc.SQLDataSource;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/**
+ * Auto-generated class.
+ */
+class MyObjectDAOImpl implements com.github.gr3gdev.jdbc.test.dao.MyObjectDAO {
+
+    @Override
+    public void add(final com.github.gr3gdev.jdbc.test.MyObject obj) {
+        final String sql = "INSERT INTO MY_OBJECT (NAME) VALUES (?)";
+        SQLDataSource.executeAndGetKey("db1", sql, (stm) -> {
+            stm.setString(1, obj.getName());
+            stm.executeUpdate();
+        }, (res) -> {
+            obj.setId(res.getLong(1));
+        });
+    }
+
+    @Override
+    public int update(final long id, final java.lang.String name) {
+        final String sql = "UPDATE MY_OBJECT SET NAME = ? " +
+            "WHERE MY_OBJECT.ID = ?";
+        return SQLDataSource.executeAndUpdate("db1", sql, (stm) -> {
+            stm.setString(1, name);
+            stm.setLong(2, id);
+            return stm.executeUpdate();
+        });
+    }
+
+    @Override
+    public java.util.List<com.github.gr3gdev.jdbc.test.MyObject> find() {
+        final java.util.List<com.github.gr3gdev.jdbc.test.MyObject> ret = new java.util.LinkedList();
+        final String sql = "SELECT MY_OBJECT.ID as MY_OBJECT_ID, " +
+            "MY_OBJECT.NAME as MY_OBJECT_NAME FROM MY_OBJECT";
+        return SQLDataSource.executeAndReturn("db1", sql, (stm) -> {
+            // Without parameters
+        }, (res) -> {
+            while (res.next()) {
+                final com.github.gr3gdev.jdbc.test.MyObject myobject = new com.github.gr3gdev.jdbc.test.MyObject();
+                myobject.setId(res.getLong("MY_OBJECT_ID"));
+                myobject.setName(res.getString("MY_OBJECT_NAME"));
+                ret.add(myobject);
+            }
+            return ret;
+        });
+    }
+
+    @Override
+    public int delete(final long id) {
+        final String sql = "DELETE FROM MY_OBJECT " +
+            "WHERE MY_OBJECT.ID = ?";
+        return SQLDataSource.executeAndUpdate("db1", sql, (stm) -> {
+            stm.setLong(1, id);
+            return stm.executeUpdate();
+        });
+    }
+}

@@ -1,0 +1,9 @@
+
+    @Override
+    public int deleteAll() {
+        final String sql = "DELETE FROM PERSON";
+        return SQLDataSource.executeAndUpdate("MyDB", sql, (stm) -> {
+            // Without parameters
+            return stm.executeUpdate();
+        });
+    }

@@ -6,11 +6,8 @@ import kotlin.reflect.KClass
 /**
  * Annotation for a DAO interface.
  *
- * Use "mapTo" attribute to associate the @Table class.
+ * Use "implementation" attribute if you implement an abstract class.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class Queries(
-        val mapTo: KClass<*>,
-        val implementation: KClass<*> = Processor::class
-)
+annotation class Queries(val implementation: KClass<*> = Processor::class)

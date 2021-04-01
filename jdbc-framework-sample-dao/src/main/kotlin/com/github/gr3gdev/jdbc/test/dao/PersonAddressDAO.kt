@@ -2,13 +2,12 @@ package com.github.gr3gdev.jdbc.test.dao
 
 import com.github.gr3gdev.jdbc.dao.Queries
 import com.github.gr3gdev.jdbc.dao.Query
-import com.github.gr3gdev.jdbc.dao.QueryType
 import com.github.gr3gdev.jdbc.test.bean.PersonAddress
 
-@Queries(PersonAddress::class)
+@Queries
 interface PersonAddressDAO {
 
-    @Query(QueryType.INSERT, ["street", "town"])
+    @Query(sql = "INSERT PersonAddress (PersonAddress)")
     fun add(personAddress: PersonAddress)
 
 }

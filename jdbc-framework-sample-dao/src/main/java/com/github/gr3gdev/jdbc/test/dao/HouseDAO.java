@@ -2,22 +2,21 @@ package com.github.gr3gdev.jdbc.test.dao;
 
 import com.github.gr3gdev.jdbc.dao.Queries;
 import com.github.gr3gdev.jdbc.dao.Query;
-import com.github.gr3gdev.jdbc.dao.QueryType;
 import com.github.gr3gdev.jdbc.test.bean.House;
 import com.github.gr3gdev.jdbc.test.dao.impl.AbstractHouseDAO;
 
 import java.util.List;
 import java.util.Optional;
 
-@Queries(mapTo = House.class, implementation = AbstractHouseDAO.class)
+@Queries(implementation = AbstractHouseDAO.class)
 public interface HouseDAO {
 
     List<House> test();
 
-    @Query(type = QueryType.INSERT)
+    @Query(sql = "INSERT House (House)")
     void add(House house);
 
-    @Query(type = QueryType.SELECT, attributes = {"id", "name"}, filters = {"id"})
+    @Query(sql = "SELECT House.id, House.name FROM House WHERE House.id")
     Optional<House> findById(int id);
 
 }

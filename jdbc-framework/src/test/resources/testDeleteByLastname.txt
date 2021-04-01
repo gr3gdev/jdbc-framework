@@ -1,0 +1,10 @@
+
+    @Override
+    public int deleteByLastname(final java.lang.String lastname) {
+        final String sql = "DELETE FROM PERSON " +
+            "WHERE PERSON.LASTNAME = ?";
+        return SQLDataSource.executeAndUpdate("MyDB", sql, (stm) -> {
+            stm.setString(1, lastname);
+            return stm.executeUpdate();
+        });
+    }

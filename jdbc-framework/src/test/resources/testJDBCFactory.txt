@@ -1,0 +1,31 @@
+package com.github.gr3gdev.jdbc.test.jdbc;
+
+import com.github.gr3gdev.jdbc.SQLDataSource;
+
+import com.github.gr3gdev.jdbc.test.dao.MyObjectDAO;
+
+/**
+ * Auto-generated class.
+ */
+public class JDBCFactory {
+
+    /**
+     * Init the database(s).
+     */
+    public static void init() {
+        SQLDataSource.init("/path/to/file1.properties", "db1");
+    }
+
+    // DAO implementations
+
+    /**
+     * Get an instance of {@link com.github.gr3gdev.jdbc.test.dao.MyObjectDAO}.
+     *
+     * @return {@link com.github.gr3gdev.jdbc.test.dao.MyObjectDAO}
+     */
+    public static MyObjectDAO getMyObjectDAO() {
+        return new MyObjectDAOImpl();
+    }
+    // end DAO implementations
+
+}

@@ -14,7 +14,7 @@ $imports
  * Auto-generated class.
  */
 class $className $extends {
-    $methods
+$methods
 }
 """.trimIndent()
     }

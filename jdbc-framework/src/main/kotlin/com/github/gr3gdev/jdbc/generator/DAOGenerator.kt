@@ -2,6 +2,7 @@ package com.github.gr3gdev.jdbc.generator
 
 import com.github.gr3gdev.jdbc.dao.Queries
 import com.github.gr3gdev.jdbc.dao.Query
+import com.github.gr3gdev.jdbc.metadata.element.TableElement
 import com.github.gr3gdev.jdbc.processor.ReflectUtils
 import com.github.gr3gdev.jdbc.template.DAOImplTemplate
 import com.github.gr3gdev.jdbc.template.JDBCFactoryTemplate
@@ -23,35 +24,34 @@ internal object DAOGenerator {
 
     private fun processImplementDAO(processingEnv: ProcessingEnvironment, element: Element, packageName: String, tables: Set<Element>): Pair<Element, String?> {
         val annotation = ReflectUtils.getAnnotation(element, Queries::class)
-        val type = ReflectUtils.getAnnotationAttributeValue(annotation, "mapTo")
         val implementation = ReflectUtils.getAnnotationAttributeValue(annotation, "implementation")
         val parent = if (implementation != null && implementation.toString() != Processor::class.qualifiedName) {
             "extends $implementation"
         } else {
             "implements $element"
         }
-        val table = tables.firstOrNull { it.toString() == type.toString() }
-                ?: throw RuntimeException("$type is not a table")
+        val tablesElement = tables.map {
+            TableElement(processingEnv, it, it.asType().toString())
+        }.toSet()
         if (element.kind == ElementKind.INTERFACE) {
             val fileName = "${element.simpleName}Impl"
-            val queries = element.enclosedElements.map {
-                when {
-                    ReflectUtils.isAnnotationPresent(it, Query::class) -> {
-                        QueryGenerator.generate(processingEnv, table, type, it)
+            val queries = element.enclosedElements
+                    .filter { ReflectUtils.isAnnotationPresent(it, Query::class) }
+                    .map {
+                        QueryGenerator.generate(tablesElement, it)
                     }
-                    else -> Pair(listOf(), "")
-                }
-            }
             val imports = queries.flatMapTo(HashSet()) {
-                it.first
+                it.imports
             }.sorted().joinToString("\n") {
                 "import $it;"
             }
             val methods = queries.joinToString("\n") {
-                it.second
+                it.method
             }
             val classContent = DAOImplTemplate.generate(packageName, imports, parent, fileName, methods)
-            processingEnv.filer.createSourceFile("$packageName.$fileName").openWriter().use { it.write(classContent) }
+            processingEnv.filer.createSourceFile("$packageName.$fileName").openWriter().use {
+                it.write(classContent)
+            }
             return Pair(element, fileName)
         }
         return Pair(element, null)

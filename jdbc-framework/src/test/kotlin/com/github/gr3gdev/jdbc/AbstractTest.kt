@@ -25,18 +25,22 @@ abstract class AbstractTest {
         Mockito.`when`(processingEnvironment.typeUtils).thenReturn(typeUtils)
     }
 
+    fun readFile(fileName: String): String {
+        return String(javaClass.getResourceAsStream("/$fileName.txt").readAllBytes())
+    }
+
     protected fun mockTable(tableName: String, tableColumns: List<ColumnTest>, databaseName: String): Element {
         val tableElement = mockElement(tableName.capitalize(), "com.github.gr3gdev.jdbc.test.${tableName.capitalize()}", Element::class.java)
         val columns = tableColumns.map {
             val type = if (it.columns != null) {
-                mockTable(it.name, it.columns, databaseName)
+                mockTable(it.fkType!!, it.columns, databaseName)
             } else {
                 null
             }
             val element = mockElement(it.name, it.clazz, Element::class.java, type)
             val columnAnnotation = mockAnnotation(element, Column::class)
             mockAnnotationAttributes(columnAnnotation, mapOf(
-                    "primaryKey" to (it.name.startsWith("id")),
+                    "primaryKey" to it.primaryKey,
                     "autoincrement" to (it.name == "id")
             ))
             element

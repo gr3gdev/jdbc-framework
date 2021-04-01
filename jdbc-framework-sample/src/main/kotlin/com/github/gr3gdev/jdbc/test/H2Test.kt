@@ -32,6 +32,7 @@ fun test1() {
     val person = Person()
     person.firstname = "Bobby"
     person.personAddress = address
+    person.age = 22
     person.car = car2
 
     println("Add $person")
