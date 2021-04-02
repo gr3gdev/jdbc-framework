@@ -1,3 +1,5 @@
+[![Gradle Publish](https://github.com/gr3gdev/jdbc-framework/actions/workflows/publish.yml/badge.svg)](https://github.com/gr3gdev/jdbc-framework/actions/workflows/publish.yml)
+
 # jdbc-framework
 
 Une librairie java pour générer le code de la couche DAO et gérer automatiquement les appels à la base de données :
