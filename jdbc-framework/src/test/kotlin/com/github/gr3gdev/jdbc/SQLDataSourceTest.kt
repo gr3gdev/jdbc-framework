@@ -14,22 +14,13 @@ class SQLDataSourceTest {
         SQLDataSource.init("/test.properties", "db")
     }
 
-    @Test
+    @Test(expected = JDBCExecutionException::class)
     fun `test - execute invalid`() {
-        try {
-            SQLDataSource.execute("db", "Not a valid request 1", object : SQLDataSource.StatementExecution {
-                override fun run(stm: PreparedStatement) {
-                    Assert.fail()
-                }
-            })
-        } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("""
-Error on 'Not a valid request 1'
-Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 1"
-Syntax error in SQL statement "NOT[*] A VALID REQUEST 1"; SQL statement:
-Not a valid request 1 [42000-200]
-            """.trimIndent(), exc.message)
-        }
+        SQLDataSource.execute("db", "Not a valid request 1", object : SQLDataSource.StatementExecution {
+            override fun run(stm: PreparedStatement) {
+                Assert.fail()
+            }
+        })
     }
 
     @Test
@@ -41,26 +32,17 @@ Not a valid request 1 [42000-200]
         })
     }
 
-    @Test
+    @Test(expected = JDBCExecutionException::class)
     fun `test - executeAndGetKey invalid`() {
-        try {
-            SQLDataSource.executeAndGetKey("db", "Not a valid request 2", object : SQLDataSource.StatementExecution {
-                override fun run(stm: PreparedStatement) {
-                    Assert.fail()
-                }
-            }, object : SQLDataSource.ResultSetExecution {
-                override fun run(res: ResultSet) {
-                    Assert.fail()
-                }
-            })
-        } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("""
-Error on 'Not a valid request 2'
-Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 2"
-Syntax error in SQL statement "NOT[*] A VALID REQUEST 2"; SQL statement:
-Not a valid request 2 [42000-200]
-            """.trimIndent(), exc.message)
-        }
+        SQLDataSource.executeAndGetKey("db", "Not a valid request 2", object : SQLDataSource.StatementExecution {
+            override fun run(stm: PreparedStatement) {
+                Assert.fail()
+            }
+        }, object : SQLDataSource.ResultSetExecution {
+            override fun run(res: ResultSet) {
+                Assert.fail()
+            }
+        })
     }
 
     @Test
@@ -82,23 +64,14 @@ Not a valid request 2 [42000-200]
         })
     }
 
-    @Test
+    @Test(expected = JDBCExecutionException::class)
     fun `test - executeAndUpdate invalid`() {
-        try {
-            SQLDataSource.executeAndUpdate("db", "Not a valid request 3", object : SQLDataSource.Execution<PreparedStatement, Int> {
-                override fun run(obj: PreparedStatement): Int {
-                    Assert.fail()
-                    return 0
-                }
-            })
-        } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("""
-Error on 'Not a valid request 3'
-Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 3"
-Syntax error in SQL statement "NOT[*] A VALID REQUEST 3"; SQL statement:
-Not a valid request 3 [42000-200]
-            """.trimIndent(), exc.message)
-        }
+        SQLDataSource.executeAndUpdate("db", "Not a valid request 3", object : SQLDataSource.Execution<PreparedStatement, Int> {
+            override fun run(obj: PreparedStatement): Int {
+                Assert.fail()
+                return 0
+            }
+        })
     }
 
     @Test
@@ -125,28 +98,19 @@ Not a valid request 3 [42000-200]
         Assert.assertEquals(1, maj)
     }
 
-    @Test
+    @Test(expected = JDBCExecutionException::class)
     fun `test - executeAndReturn invalid`() {
-        try {
-            SQLDataSource.executeAndReturn("db", "Not a valid request 4", object : SQLDataSource.StatementExecution {
-                override fun run(stm: PreparedStatement) {
-                    Assert.fail()
-                }
-            }, object : SQLDataSource.Execution<ResultSet, Int> {
-                override fun run(obj: ResultSet): Int {
-                    Assert.fail()
-                    return 0
-                }
+        SQLDataSource.executeAndReturn("db", "Not a valid request 4", object : SQLDataSource.StatementExecution {
+            override fun run(stm: PreparedStatement) {
+                Assert.fail()
+            }
+        }, object : SQLDataSource.Execution<ResultSet, Int> {
+            override fun run(obj: ResultSet): Int {
+                Assert.fail()
+                return 0
+            }
 
-            })
-        } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("""
-Error on 'Not a valid request 4'
-Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 4"
-Syntax error in SQL statement "NOT[*] A VALID REQUEST 4"; SQL statement:
-Not a valid request 4 [42000-200]
-            """.trimIndent(), exc.message)
-        }
+        })
     }
 
     @Test
