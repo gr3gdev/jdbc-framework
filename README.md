@@ -15,7 +15,7 @@ Configuration :
 <dependency>
     <groupId>com.github.gr3gdev</groupId>
     <artifactId>jdbc-framework</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 </dependency>
 
 <plugin>
@@ -27,7 +27,7 @@ Configuration :
             <annotationProcessorPath>
                 <groupId>com.github.gr3gdev</groupId>
                 <artifactId>jdbc-framework</artifactId>
-                <version>0.4.0</version>
+                <version>0.4.1</version>
             </annotationProcessorPath>
         </annotationProcessorPaths>
     </configuration>
@@ -37,8 +37,8 @@ Configuration :
 - Gradle
 
 ```
-implementation 'com.github.gr3gdev:jdbc-framework:0.4.0'
-annotationProcessor 'com.github.gr3gdev:jdbc-framework:0.4.0'
+implementation 'com.github.gr3gdev:jdbc-framework:0.4.1'
+annotationProcessor 'com.github.gr3gdev:jdbc-framework:0.4.1'
 ```
 
 Avec kotlin
@@ -49,8 +49,8 @@ plugins {
     kotlin("kapt") version "1.4.21"
 }
 
-implementation("com.github.gr3gdev:jdbc-framework:0.4.0")
-kapt("com.github.gr3gdev:jdbc-framework:0.4.0")
+implementation("com.github.gr3gdev:jdbc-framework:0.4.1")
+kapt("com.github.gr3gdev:jdbc-framework:0.4.1")
 ```
 
 
