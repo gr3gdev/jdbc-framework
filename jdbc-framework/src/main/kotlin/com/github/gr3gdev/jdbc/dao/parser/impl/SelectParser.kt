@@ -57,11 +57,7 @@ internal class SelectParser : RequestParser {
                 val parentTable = it.parentTable
                 val parentFk = parentTable.columns.firstOrNull { c -> c.foreignKey != null && c.foreignKey!!.name == fkTable.name }
                         ?: throw RuntimeException("Foreign key not found : ${it.parentTable}")
-                val fkPrimaryKey = if (parentTable.getPrimaryKey().foreignKey != null) {
-                    "${parentTable.getPrimaryKey().foreignKey!!.getPrimaryKey().name()}_${parentFk.name()}"
-                } else {
-                    "${parentTable.getPrimaryKey().name()}_${parentFk.name()}"
-                }
+                val fkPrimaryKey = parentFk.name()
                 "$type ${fkTable.name} ON ${fkTable.name}.${fkTable.getPrimaryKey().name()} = ${parentTable.name}.$fkPrimaryKey"
             } else {
                 null

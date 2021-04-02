@@ -6,5 +6,6 @@ package com.github.gr3gdev.jdbc.metadata
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 annotation class Table(
+        val name: String = "",
         val databaseName: String = "default"
 )

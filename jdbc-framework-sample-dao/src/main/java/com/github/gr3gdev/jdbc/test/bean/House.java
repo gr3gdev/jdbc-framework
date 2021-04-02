@@ -3,13 +3,13 @@ package com.github.gr3gdev.jdbc.test.bean;
 import com.github.gr3gdev.jdbc.metadata.Column;
 import com.github.gr3gdev.jdbc.metadata.Table;
 
-@Table(databaseName = "test2")
+@Table(name = "TABLE_HOUSE", databaseName = "test2")
 public class House {
 
     @Column(primaryKey = true, autoincrement = true)
     private int id;
 
-    @Column
+    @Column(name = "HOUSE_NAME")
     private String name;
 
     public int getId() {

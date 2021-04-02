@@ -10,10 +10,23 @@ internal class ColumnElement(
         val type: TypeMirror,
         val primaryKey: Boolean,
         val autoincrement: Boolean,
-        val required: Boolean
+        val required: Boolean,
+        val columnName: String? = null
 ) : DatabaseElement() {
     var foreignKey: TableElement? = null
-    fun name() = fieldName.camelToSnakeCase()
+    fun name(): String {
+        val defaultName = if (columnName.isNullOrBlank()) {
+            fieldName.camelToSnakeCase()
+        } else {
+            columnName
+        }
+        return if (foreignKey != null) {
+            val pkOfForeignKey = foreignKey!!.getPrimaryKey().name()
+            "${pkOfForeignKey}_${defaultName}"
+        } else {
+            defaultName
+        }
+    }
 
     companion object {
         val ALL = ColumnElement("*", object : TypeMirror {

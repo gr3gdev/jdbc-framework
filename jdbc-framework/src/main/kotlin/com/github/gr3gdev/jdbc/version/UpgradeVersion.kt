@@ -8,7 +8,6 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.sql.Connection
-import java.sql.SQLException
 import java.util.*
 import kotlin.Comparator
 import kotlin.collections.ArrayList

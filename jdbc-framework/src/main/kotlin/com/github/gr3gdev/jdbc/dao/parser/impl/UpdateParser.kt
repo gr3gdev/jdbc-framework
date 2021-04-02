@@ -40,11 +40,7 @@ internal class UpdateParser : RequestParser {
             }.distinct()
             val constructSql = listOf("UPDATE ${table.name} SET",
                     setters.joinToString(", ") {
-                        if (it.columnElement.foreignKey != null) {
-                            "${it.columnElement.foreignKey!!.getPrimaryKey().name()}_${it.columnElement.name()} = ?"
-                        } else {
-                            "${it.columnElement.name()} = ?"
-                        }
+                        "${it.columnElement.name()} = ?"
                     },
                     constructSqlConditions(tables, conditions))
                     .joinToString(" ")

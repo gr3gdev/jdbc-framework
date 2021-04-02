@@ -27,11 +27,7 @@ internal class InsertParser : RequestParser {
             }.distinctBy { it.columnElement.name() }
             val constructSql = "INSERT INTO ${table.name} (${
                 elements.joinToString(", ") {
-                    if (it.columnElement.foreignKey != null) {
-                        "${it.columnElement.foreignKey!!.getPrimaryKey().name()}_${it.columnElement.name()}"
-                    } else {
-                        it.columnElement.name()
-                    }
+                    it.columnElement.name()
                 }
             }) VALUES (${elements.joinToString(", ") { "?" }})"
             return Request(table, constructSql, elements)

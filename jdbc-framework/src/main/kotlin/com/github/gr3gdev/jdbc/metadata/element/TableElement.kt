@@ -8,12 +8,24 @@ import javax.lang.model.element.Element
 
 internal class TableElement(private val processingEnv: ProcessingEnvironment, table: Element, val classType: String) : DatabaseElement() {
 
+    private val annotation = ReflectUtils.getAnnotation(table, Table::class)
+
     val fieldName = table.simpleName.toString()
-    val name = fieldName.camelToSnakeCase()
-    val databaseName = ReflectUtils.getAnnotationAttributeValue(ReflectUtils.getAnnotation(table, Table::class), "databaseName") as String? ?: "default"
+    val name: String
+    val databaseName = ReflectUtils.getAnnotationAttributeValue(annotation, "databaseName") as String? ?: "default"
     val columns = getColumns(table)
 
-    fun getPrimaryKey() = columns.firstOrNull { it.primaryKey } ?: throw RuntimeException("No primary key found for $name")
+    init {
+        val tableName = ReflectUtils.getAnnotationAttributeValue(annotation, "name") as String?
+        name = if (tableName.isNullOrBlank()) {
+            fieldName.camelToSnakeCase()
+        } else {
+            tableName
+        }
+    }
+
+    fun getPrimaryKey() = columns.firstOrNull { it.primaryKey }
+            ?: throw RuntimeException("No primary key found for $name")
 
     private fun getColumns(table: Element): List<ColumnElement> {
         return table.enclosedElements.filter { ReflectUtils.isAnnotationPresent(it, Column::class) }
@@ -24,7 +36,8 @@ internal class TableElement(private val processingEnv: ProcessingEnvironment, ta
                             it.asType(),
                             ReflectUtils.getAnnotationAttributeValue(annotation, "primaryKey") as Boolean? ?: false,
                             ReflectUtils.getAnnotationAttributeValue(annotation, "autoincrement") as Boolean? ?: false,
-                            ReflectUtils.getAnnotationAttributeValue(annotation, "required") as Boolean? ?: true
+                            ReflectUtils.getAnnotationAttributeValue(annotation, "required") as Boolean? ?: true,
+                            ReflectUtils.getAnnotationAttributeValue(annotation, "name") as String?
                     )
                     val columnType = processingEnv.typeUtils.asElement(it.asType())
                     if (columnType != null && ReflectUtils.isAnnotationPresent(columnType, Table::class)) {

@@ -23,7 +23,12 @@ class SQLDataSourceTest {
                 }
             })
         } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("Error on 'Not a valid request 1'", exc.message)
+            Assert.assertEquals("""
+Error on 'Not a valid request 1'
+Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 1"
+Syntax error in SQL statement "NOT[*] A VALID REQUEST 1"; SQL statement:
+Not a valid request 1 [42000-200]
+            """.trimIndent(), exc.message)
         }
     }
 
@@ -49,7 +54,12 @@ class SQLDataSourceTest {
                 }
             })
         } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("Error on 'Not a valid request 2'", exc.message)
+            Assert.assertEquals("""
+Error on 'Not a valid request 2'
+Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 2"
+Syntax error in SQL statement "NOT[*] A VALID REQUEST 2"; SQL statement:
+Not a valid request 2 [42000-200]
+            """.trimIndent(), exc.message)
         }
     }
 
@@ -82,7 +92,12 @@ class SQLDataSourceTest {
                 }
             })
         } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("Error on 'Not a valid request 3'", exc.message)
+            Assert.assertEquals("""
+Error on 'Not a valid request 3'
+Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 3"
+Syntax error in SQL statement "NOT[*] A VALID REQUEST 3"; SQL statement:
+Not a valid request 3 [42000-200]
+            """.trimIndent(), exc.message)
         }
     }
 
@@ -125,7 +140,12 @@ class SQLDataSourceTest {
 
             })
         } catch (exc: JDBCExecutionException) {
-            Assert.assertEquals("Error on 'Not a valid request 4'", exc.message)
+            Assert.assertEquals("""
+Error on 'Not a valid request 4'
+Erreur de syntaxe dans l'instruction SQL "NOT[*] A VALID REQUEST 4"
+Syntax error in SQL statement "NOT[*] A VALID REQUEST 4"; SQL statement:
+Not a valid request 4 [42000-200]
+            """.trimIndent(), exc.message)
         }
     }
 

@@ -25,8 +25,8 @@ internal abstract class AbstractQueryTest : AbstractTest() {
     val personClass = "com.github.gr3gdev.jdbc.test.Person"
     val addressClass = "com.github.gr3gdev.jdbc.test.Address"
     val townClass = "com.github.gr3gdev.jdbc.test.Town"
-    val petClass = "com.github.gr3gdev.jdbc.test.Pet"
-    val personPetClass = "com.github.gr3gdev.jdbc.test.PersonPet"
+    private val petClass = "com.github.gr3gdev.jdbc.test.Pet"
+    private val personPetClass = "com.github.gr3gdev.jdbc.test.PersonPet"
 
     private val columnsTown = listOf(
             ColumnTest("id", Int::class.java.canonicalName, true),

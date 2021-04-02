@@ -6,6 +6,7 @@ package com.github.gr3gdev.jdbc.metadata
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.SOURCE)
 annotation class Column(
+        val name: String = "",
         val primaryKey: Boolean = false,
         val autoincrement: Boolean = false,
         val required: Boolean = true

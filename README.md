@@ -15,7 +15,7 @@ Configuration :
 <dependency>
     <groupId>com.github.gr3gdev</groupId>
     <artifactId>jdbc-framework</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2</version>
 </dependency>
 
 <plugin>
@@ -27,7 +27,7 @@ Configuration :
             <annotationProcessorPath>
                 <groupId>com.github.gr3gdev</groupId>
                 <artifactId>jdbc-framework</artifactId>
-                <version>0.4.1</version>
+                <version>0.4.2</version>
             </annotationProcessorPath>
         </annotationProcessorPaths>
     </configuration>
@@ -37,8 +37,8 @@ Configuration :
 - Gradle
 
 ```
-implementation 'com.github.gr3gdev:jdbc-framework:0.4.1'
-annotationProcessor 'com.github.gr3gdev:jdbc-framework:0.4.1'
+implementation 'com.github.gr3gdev:jdbc-framework:0.4.2'
+annotationProcessor 'com.github.gr3gdev:jdbc-framework:0.4.2'
 ```
 
 Avec kotlin
@@ -49,8 +49,8 @@ plugins {
     kotlin("kapt") version "1.4.21"
 }
 
-implementation("com.github.gr3gdev:jdbc-framework:0.4.1")
-kapt("com.github.gr3gdev:jdbc-framework:0.4.1")
+implementation("com.github.gr3gdev:jdbc-framework:0.4.2")
+kapt("com.github.gr3gdev:jdbc-framework:0.4.2")
 ```
 
 
@@ -107,6 +107,7 @@ Annotations pour définir la structure d'une table.
 |Attribut    |Type   |Valeur par défaut|Description                                                   |
 |------------|-------|-----------------|--------------------------------------------------------------|
 |databaseName|String |default          |Nom de la base de données où la table doit être ajoutée       |
+|name        |String |                 |Nom de la table (facultatif)                                  |
 
 @Column
 
@@ -114,7 +115,8 @@ Annotations pour définir la structure d'une table.
 |-------------------|-------|-----------------|-----------------------------------------------|
 |primaryKey         |Boolean|false            |Vrai si la colonne est de type clé primaire    |
 |autoincrement      |Boolean|false            |Vrai si la colonne s'auto incrémente           |
-|require            |Boolean|true             |Vrai si la colonne est obligatoire             |
+|required           |Boolean|true             |Vrai si la colonne est obligatoire             |
+|name               |String |                 |Nom de la colonne (facultatif)                 |
 
 Exemple de syntaxe :
 
